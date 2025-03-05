@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -24,6 +25,10 @@ func main() {
 
 	r.StaticFile("/assets/app.js", appPath)
 	r.StaticFile("/", htmlPath)
+
+	r.NoRoute(func(c *gin.Context) {
+		c.Status(http.StatusNotFound)
+	})
 
 	r.Run() // listen and serve on port 8080
 }
