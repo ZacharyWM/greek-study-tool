@@ -1,0 +1,16 @@
+@font-face {
+  font-family: "SBLBibLit";
+  src: url("/fonts/SBLBibLit.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.greek-text {
+  font-family: "SBLBibLit", serif;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  line-height: 1.6;
+}
+

@@ -24,6 +24,7 @@ func main() {
 	htmlPath := path.Join(dir, "frontend/index.html")
 
 	r.StaticFile("/assets/app.js", appPath)
+	r.StaticFile("/assets/output.css", path.Join(dir, "frontend/build/style.css"))
 	r.StaticFile("/", htmlPath)
 
 	r.NoRoute(func(c *gin.Context) {
