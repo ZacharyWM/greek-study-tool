@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import type { PhraseType } from "../models/models";
+import type { PhraseType } from "../types/models";
 import React from "react";
 
 interface PhraseControlsProps {

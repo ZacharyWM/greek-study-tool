@@ -9,7 +9,7 @@ import {
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 
-import type { Word } from "../models/models";
+import type { Word } from "../types/models";
 
 interface WordContextMenuProps {
   word: Word;

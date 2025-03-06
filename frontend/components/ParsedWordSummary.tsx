@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import type { Word } from "../models/models";
+import type { Word } from "../types/models";
 
 interface ParsedWordSummaryProps {
   word: Word;

@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "../components/ui/button";
 import { Save, Upload } from "lucide-react";
-import type { Section } from "../models/models";
+import type { Section } from "../types/models";
 
 interface SaveLoadButtonsProps {
   sections: Section[];

@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "../components/ui/button";
-import type { Section } from "../models/models";
+import type { Section } from "../types/models";
 
 const PdfExport: React.FC<{ sections: Section[] }> = ({ sections }) => {
   const handleExport = () => {
