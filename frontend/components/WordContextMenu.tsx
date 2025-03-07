@@ -5,7 +5,7 @@ import {
   ContextMenuTrigger,
   ContextMenuContent,
   ContextMenuItem,
-} from "@radix-ui/react-context-menu";
+} from "../components/ui/context-menu";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 

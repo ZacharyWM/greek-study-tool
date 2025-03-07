@@ -119,14 +119,16 @@ export default function Home() {
     setSections((prevSections) =>
       prevSections.map((section) => ({
         ...section,
-        words: section.words.map((w) =>
-          w.id === wordId
-            ? {
-                ...w,
-                label: newLabel,
-              }
-            : w
-        ),
+        words: section.words.map((w) => {
+          if (w.id === wordId) {
+            console.log(`word label change: ${w.text} to ${newLabel}`);
+            return {
+              ...w,
+              label: newLabel,
+            };
+          }
+          return w;
+        }),
       }))
     );
   };

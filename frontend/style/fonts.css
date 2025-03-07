@@ -1,6 +1,6 @@
 @font-face {
   font-family: "SBLBibLit";
-  src: url("/fonts/SBLBibLit.ttf") format("truetype");
+  src: url("./SBLBibLit.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
