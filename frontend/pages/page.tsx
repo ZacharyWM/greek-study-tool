@@ -12,6 +12,8 @@ import { Slider } from "../components/ui/slider";
 import { Label } from "../components/ui/label";
 import type { Section, Word, WordParsing } from "../types/models";
 
+import { useAuth0 } from "@auth0/auth0-react";
+
 interface Line {
   id: number;
   startWord: Word;
@@ -40,6 +42,21 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
+
+  const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
+
+  const logoutWithRedirect = () =>
+    logout({
+      logoutParams: {
+        returnTo: window.location.origin,
+      },
+    });
+
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     loginWithRedirect();
+  //   }
+  // }, [isAuthenticated, loginWithRedirect]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
