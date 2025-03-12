@@ -3,5 +3,3 @@ tmp
 frontend/build
 
 .env
-
-platform/auth0const/auth0const.go
