@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 export const NavigationBar: React.FC = () => {
   const { isAuthenticated, loginWithRedirect, logout } = useAuth0();
+
+  useEffect(() => {
+    console.log("isAuthenticated", isAuthenticated);
+  }, [isAuthenticated]);
 
   return (
     <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">

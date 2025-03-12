@@ -4,44 +4,45 @@ import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
 import Home from "./pages/page";
 import {
-  useNavigate,
   BrowserRouter as Router,
   Route,
   Routes,
+  useNavigate,
 } from "react-router-dom";
 
 import { getConfig } from "./config";
 import { Auth0Provider } from "@auth0/auth0-react";
-import { NavigationBar } from "./components/NavigationBar"; // Assuming you have a NavigationBar component
+import { NavigationBar } from "./components/NavigationBar";
 
-const App = () => {
-  // Please see https://auth0.github.io/auth0-react/interfaces/Auth0ProviderOptions.html
-  // for a full list of the available properties on the provider
+const Auth0ProviderWithNavigate = ({ children }) => {
+  const navigate = useNavigate();
   const config = getConfig();
 
   const onRedirectCallback = (appState) => {
-    const navigate = useNavigate();
-    navigate(
-      appState && appState.returnTo
-        ? appState.returnTo
-        : window.location.pathname
-    );
-  };
-
-  const providerConfig = {
-    domain: config.domain,
-    clientId: config.clientId,
-    onRedirectCallback,
-    authorizationParams: {
-      redirect_uri: window.location.origin,
-      audience: config.audience,
-    },
+    navigate(appState?.returnTo || window.location.pathname);
   };
 
   return (
-    <Auth0Provider {...providerConfig}>
-      <Theme>
-        <Router>
+    <Auth0Provider
+      domain={config.domain}
+      clientId={config.clientId}
+      onRedirectCallback={onRedirectCallback}
+      authorizationParams={{
+        redirect_uri: window.location.origin,
+        audience: config.audience,
+      }}
+    >
+      {children}
+    </Auth0Provider>
+  );
+};
+
+// Main app component
+const App = () => {
+  return (
+    <Theme>
+      <Router>
+        <Auth0ProviderWithNavigate>
           <div>
             <NavigationBar />
             <Routes>
@@ -49,9 +50,9 @@ const App = () => {
               {/* Add more routes here as needed */}
             </Routes>
           </div>
-        </Router>
-      </Theme>
-    </Auth0Provider>
+        </Auth0ProviderWithNavigate>
+      </Router>
+    </Theme>
   );
 };
 
