@@ -3,14 +3,14 @@ package logout
 import (
 	"net/http"
 	"net/url"
-	"os"
 
+	"github.com/ZacharyWM/greek-study-tool/platform/auth0const"
 	"github.com/gin-gonic/gin"
 )
 
 // Handler for our logout.
 func Handler(ctx *gin.Context) {
-	logoutUrl, err := url.Parse("https://" + os.Getenv("AUTH0_DOMAIN") + "/v2/logout")
+	logoutUrl, err := url.Parse("https://" + auth0const.AUTH0_DOMAIN + "/v2/logout")
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return
@@ -29,7 +29,7 @@ func Handler(ctx *gin.Context) {
 
 	parameters := url.Values{}
 	parameters.Add("returnTo", returnTo.String())
-	parameters.Add("client_id", os.Getenv("AUTH0_CLIENT_ID"))
+	parameters.Add("client_id", auth0const.AUTH0_CLIENT_ID)
 	logoutUrl.RawQuery = parameters.Encode()
 
 	ctx.Redirect(http.StatusTemporaryRedirect, logoutUrl.String())

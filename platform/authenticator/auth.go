@@ -3,8 +3,8 @@ package authenticator
 import (
 	"context"
 	"errors"
-	"os"
 
+	"github.com/ZacharyWM/greek-study-tool/platform/auth0const"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )
@@ -19,16 +19,16 @@ type Authenticator struct {
 func New() (*Authenticator, error) {
 	provider, err := oidc.NewProvider(
 		context.Background(),
-		"https://"+os.Getenv("AUTH0_DOMAIN")+"/",
+		"https://"+auth0const.AUTH0_DOMAIN+"/",
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	conf := oauth2.Config{
-		ClientID:     os.Getenv("AUTH0_CLIENT_ID"),
-		ClientSecret: os.Getenv("AUTH0_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("AUTH0_CALLBACK_URL"),
+		ClientID:     auth0const.AUTH0_CLIENT_ID,
+		ClientSecret: auth0const.AUTH0_CLIENT_SECRET,
+		RedirectURL:  auth0const.AUTH0_CALLBACK_URL,
 		Endpoint:     provider.Endpoint(),
 		Scopes:       []string{oidc.ScopeOpenID, "profile"},
 	}

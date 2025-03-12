@@ -10,7 +10,7 @@ export const NavigationBar: React.FC = () => {
 
   return (
     <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
-      <div className="text-lg font-bold">Greek Study Tool</div>
+      <div className="text-lg font-bold">Greek Bible Study</div>
       <div>
         {isAuthenticated ? (
           <button
