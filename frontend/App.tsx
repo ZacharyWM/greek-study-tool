@@ -12,6 +12,7 @@ import {
 
 import { getConfig } from "./config";
 import { Auth0Provider } from "@auth0/auth0-react";
+import { NavigationBar } from "./components/NavigationBar"; // Assuming you have a NavigationBar component
 
 const App = () => {
   // Please see https://auth0.github.io/auth0-react/interfaces/Auth0ProviderOptions.html
@@ -41,10 +42,13 @@ const App = () => {
     <Auth0Provider {...providerConfig}>
       <Theme>
         <Router>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            {/* Add more routes here as needed */}
-          </Routes>
+          <div>
+            <NavigationBar />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              {/* Add more routes here as needed */}
+            </Routes>
+          </div>
         </Router>
       </Theme>
     </Auth0Provider>
