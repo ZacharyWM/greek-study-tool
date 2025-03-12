@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node esbuild.js --watch",
     "build": "node esbuild.js",
-    "tw-build": "npx tailwindcss -i ./frontend/style/style.css -o ./frontend/build/style.css"
+    "tw-build": "npx tailwindcss -i ./frontend/style/style.css -o ./frontend/build/style.css && cp ./frontend/style/SBLBibLit.ttf ./frontend/build/SBLBibLit.ttf"
   },
   "repository": {
     "type": "git",

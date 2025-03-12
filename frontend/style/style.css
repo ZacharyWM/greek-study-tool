@@ -110,3 +110,141 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* parsing styles */
+/* Base styles for parsed words */
+.parsed-word {
+  position: relative;
+  display: inline-block;
+  padding: 2px;
+  margin: 1px;
+}
+
+/* Case-based colors for Articles, Nouns, Pronouns */
+.case-nominative {
+  color: #00008b; /* Dark Blue */
+}
+
+.case-genitive {
+  color: #1e90ff; /* Light Blue */
+}
+
+.case-dative {
+  color: #ffa500; /* Orange */
+}
+
+.case-accusative {
+  color: #ff0000; /* Red */
+}
+
+/* Verb moods */
+.mood-indicative {
+  color: #008000; /* Green */
+}
+
+.mood-infinitive {
+  color: #ffd700; /* Yellow */
+}
+
+.mood-subjunctive {
+  color: #800080; /* Purple */
+}
+
+.mood-imperative {
+  color: #ff0000; /* Red */
+  text-shadow: 0 0 2px #ffd700; /* Yellow outline */
+}
+
+/* Participles */
+.participle {
+  color: #ff69b4; /* Pink */
+}
+
+.participle.case-nominative {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: #00008b; /* Dark Blue */
+}
+
+.participle.case-genitive {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: #1e90ff; /* Light Blue */
+}
+
+.participle.case-dative {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: #ffa500; /* Orange */
+}
+
+.participle.case-accusative {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: #ff0000; /* Red */
+}
+
+/* Adverbs */
+.adverb {
+  text-decoration: underline;
+  text-decoration-style: double;
+  text-decoration-color: #ff0000;
+}
+
+/* Adjectives */
+.adjective {
+  border-style: dotted;
+  border-width: 2px;
+  border-radius: 4px;
+}
+
+.adjective.case-nominative {
+  border-color: #00008b; /* Dark Blue */
+}
+
+.adjective.case-genitive {
+  border-color: #1e90ff; /* Light Blue */
+}
+
+.adjective.case-dative {
+  border-color: #ffa500; /* Orange */
+}
+
+.adjective.case-accusative {
+  border-color: #ff0000; /* Red */
+}
+
+/* Prepositions */
+.preposition {
+  text-decoration: wavy underline;
+  text-decoration-color: #008080; /* Teal */
+}
+
+/* Conjunctions */
+.conjunction {
+  position: relative;
+}
+
+.conjunction::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid #808080; /* Gray */
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Word label styles */
+.word-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(-100%);
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+

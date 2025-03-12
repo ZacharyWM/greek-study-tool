@@ -40,6 +40,7 @@ func main() {
 
 	r.StaticFile("/assets/app.js", appPath)
 	r.StaticFile("/assets/output.css", path.Join(dir, "frontend/build/style.css"))
+	r.StaticFile("/assets/SBLBibLit.ttf", path.Join(dir, "frontend/build/SBLBibLit.ttf"))
 	r.StaticFile("/", htmlPath)
 
 	r.GET("/healthcheck", func(c *gin.Context) {
