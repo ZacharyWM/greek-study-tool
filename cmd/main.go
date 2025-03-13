@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ZacharyWM/greek-study-tool/database"
 	"github.com/ZacharyWM/greek-study-tool/handlers/callback"
 	"github.com/ZacharyWM/greek-study-tool/handlers/login"
 	"github.com/ZacharyWM/greek-study-tool/handlers/logout"
@@ -21,6 +22,8 @@ import (
 )
 
 func main() {
+	database.InitDB()
+	database.RunMigrations()
 
 	r := gin.Default()
 
@@ -30,6 +33,7 @@ func main() {
 		panic(err)
 	}
 	dir = strings.TrimSuffix(dir, "tmp")
+	dir = strings.TrimSuffix(dir, "cmd") // so it works from debugger
 
 	appPath := path.Join(dir, "frontend/build/App.js")
 	htmlPath := path.Join(dir, "frontend/index.html")
@@ -50,19 +54,17 @@ func main() {
 	store := cookie.NewStore([]byte("secret"))
 	r.Use(sessions.Sessions("auth-session", store))
 
-	// r.Static("/public", "web/static")
-	// r.LoadHTMLGlob("web/template/*")
-
 	auth, err := authenticator.New()
 	if err != nil {
 		log.Fatalf("Failed to initialize the authenticator: %v", err)
 	}
 
-	// router.GET("/", home.Handler)
 	r.GET("/login", login.Handler(auth))
 	r.GET("/callback", callback.Handler(auth))
-	r.GET("/user", middleware.IsAuthenticated, user.Handler)
+	r.GET("/api/user/:id", user.GetUserByID)
 	r.GET("/logout", logout.Handler)
+
+	r.GET("/user", middleware.IsAuthenticated, user.Handler)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.Status(http.StatusNotFound)
