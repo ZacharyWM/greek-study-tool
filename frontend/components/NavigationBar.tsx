@@ -5,7 +5,23 @@ export const NavigationBar: React.FC = () => {
   const { isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
 
   useEffect(() => {
-    console.log("isAuthenticated", isAuthenticated);
+    if (isAuthenticated) {
+      const fetchUserData = async () => {
+        try {
+          const response = await fetch("/user", {
+            credentials: "include",
+          });
+
+          const data = await response.json();
+          console.log("Hello, ", data);
+          // You can add additional logic to handle the user data here
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      };
+
+      fetchUserData();
+    }
   }, [isAuthenticated]);
 
   return (
