@@ -34,6 +34,15 @@ func Handler(c *gin.Context) {
 		return
 	}
 
+	_, ok = profileMap["sub"].(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user sub"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"name": name})
+	return
+
 	// Check if user exists
 	var user models.User
 	err := database.DB.QueryRow("SELECT id, name FROM users WHERE name = $1", name).Scan(&user.ID, &user.Name)

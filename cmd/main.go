@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ZacharyWM/greek-study-tool/database"
 	"github.com/ZacharyWM/greek-study-tool/handlers/callback"
 	"github.com/ZacharyWM/greek-study-tool/handlers/login"
 	"github.com/ZacharyWM/greek-study-tool/handlers/logout"
@@ -22,8 +21,8 @@ import (
 )
 
 func main() {
-	database.InitDB()
-	database.RunMigrations()
+	// database.InitDB()
+	// database.RunMigrations()
 
 	r := gin.Default()
 
@@ -61,14 +60,16 @@ func main() {
 
 	r.GET("/login", login.Handler(auth))
 	r.GET("/callback", callback.Handler(auth))
-	r.GET("/api/user/:id", user.GetUserByID)
 	r.GET("/logout", logout.Handler)
 
-	r.GET("/user", middleware.IsAuthenticated, user.Handler)
+	secureRouter := r.Group("/api", middleware.IsAuthenticated)
+
+	secureRouter.GET("/user/:id", user.GetUserByID)
+	secureRouter.POST("/user", user.Handler)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 	})
 
-	r.Run() // listen and serve on port 8080
+	r.Run() // runs on env var PORT, or default 8080
 }
