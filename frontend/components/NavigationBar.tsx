@@ -2,8 +2,14 @@ import React, { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 export const NavigationBar: React.FC = () => {
-  const { isAuthenticated, loginWithRedirect, logout, user, isLoading } =
-    useAuth0();
+  const {
+    isAuthenticated,
+    loginWithRedirect,
+    logout,
+    user,
+    isLoading,
+    getAccessTokenSilently,
+  } = useAuth0();
 
   if (isLoading) {
     return (
@@ -17,19 +23,27 @@ export const NavigationBar: React.FC = () => {
   }
 
   useEffect(() => {
+    console.log("isAuthenticated", isAuthenticated);
     if (isAuthenticated) {
       const fetchUserData = async () => {
         try {
+          const at = await getAccessTokenSilently();
+
           const response = await fetch("/api/user", {
             method: "POST",
-            credentials: "include",
+            headers: {
+              Authorization: `Bearer ${at}`,
+              "Content-Type": "application/json",
+            },
           });
 
+          console.log("posted user data");
+
           const data = await response.json();
-          console.log("Hello, ", data);
+          console.log(data);
           // You can add additional logic to handle the user data here
         } catch (error) {
-          console.error("Error fetching user data:", error);
+          // console.error("Error fetching user data:", error);
         }
       };
 

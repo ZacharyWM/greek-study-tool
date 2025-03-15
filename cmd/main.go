@@ -62,7 +62,7 @@ func main() {
 	r.GET("/callback", callback.Handler(auth))
 	r.GET("/logout", logout.Handler)
 
-	secureRouter := r.Group("/api", middleware.IsAuthenticated)
+	secureRouter := r.Group("/api", middleware.JwtAuth())
 
 	secureRouter.GET("/user/:id", user.GetUserByID)
 	secureRouter.POST("/user", user.Handler)

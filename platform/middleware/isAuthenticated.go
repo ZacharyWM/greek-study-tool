@@ -81,7 +81,14 @@ func JwtAuth() gin.HandlerFunc {
 			session.Save()
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{"message": "Token is valid", "claims": claims})
+		res := struct {
+			V string `json:"valid"`
+		}{
+			V: "is valid",
+		}
+
+		// TODO - not returning valid json? {"valid":"is valid"}{}
+		ctx.JSON(http.StatusOK, res)
 
 		// Continue to the next middleware/handler
 		// ctx.Next()
