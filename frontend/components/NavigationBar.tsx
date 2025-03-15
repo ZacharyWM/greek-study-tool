@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { fetchUserData } from "../api/requests";
 
 export const NavigationBar: React.FC = () => {
   const {
@@ -25,29 +26,11 @@ export const NavigationBar: React.FC = () => {
   useEffect(() => {
     console.log("isAuthenticated", isAuthenticated);
     if (isAuthenticated) {
-      const fetchUserData = async () => {
-        try {
-          const at = await getAccessTokenSilently();
-
-          const response = await fetch("/api/user", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${at}`,
-              "Content-Type": "application/json",
-            },
-          });
-
-          console.log("posted user data");
-
-          const data = await response.json();
-          console.log(data);
-          // You can add additional logic to handle the user data here
-        } catch (error) {
-          // console.error("Error fetching user data:", error);
-        }
-      };
-
-      fetchUserData();
+      (async () => {
+        const jwt = await getAccessTokenSilently();
+        const userData = await fetchUserData(jwt);
+        console.log("userData", userData);
+      })();
     }
   }, [isAuthenticated]);
 

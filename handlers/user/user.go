@@ -39,7 +39,6 @@ func Handler(c *gin.Context) {
 }
 
 // GetAuth0UserInfo fetches the user information from Auth0's userinfo endpoint
-// using the provided JWT token for authorization
 func GetAuth0UserInfo(jwt string) (Auth0UserInfo, error) {
 	var userInfo Auth0UserInfo
 
