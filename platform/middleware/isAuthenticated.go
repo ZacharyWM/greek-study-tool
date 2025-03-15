@@ -70,28 +70,18 @@ func JwtAuth() gin.HandlerFunc {
 			return
 		}
 
-		// TODO - probably don't care about this
 		claims := token.(*validator.ValidatedClaims)
 		ctx.Set("claims", claims)
 
-		// TODO - probably don't care about this
-		if customClaims, ok := claims.CustomClaims.(*CustomClaims); ok {
-			session := sessions.Default(ctx)
-			session.Set("auth_scope", customClaims.Scope)
-			session.Save()
-		}
-
-		res := struct {
-			V string `json:"valid"`
-		}{
-			V: "is valid",
-		}
-
-		// TODO - not returning valid json? {"valid":"is valid"}{}
-		ctx.JSON(http.StatusOK, res)
+		// // TODO - probably don't care about this
+		// if customClaims, ok := claims.CustomClaims.(*CustomClaims); ok {
+		// 	session := sessions.Default(ctx)
+		// 	session.Set("auth_scope", customClaims.Scope)
+		// 	session.Save()
+		// }
 
 		// Continue to the next middleware/handler
-		// ctx.Next()
+		ctx.Next()
 	}
 }
 

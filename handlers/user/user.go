@@ -1,16 +1,32 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/ZacharyWM/greek-study-tool/database"
 	"github.com/ZacharyWM/greek-study-tool/models"
+	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
 // Handler for the user endpoint
 func Handler(c *gin.Context) {
+
+	ctxClaims, ok := c.Get("claims")
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get claims"})
+		return
+	}
+
+	claims := ctxClaims.(*validator.ValidatedClaims)
+	fmt.Println(claims.RegisteredClaims.Subject)
+
+	// TODO, get user data and save it. Maybe FE can send it.
+	c.JSON(http.StatusOK, gin.H{"user": "updated"})
+
+	return
 	session := sessions.Default(c)
 	profile := session.Get("profile")
 
