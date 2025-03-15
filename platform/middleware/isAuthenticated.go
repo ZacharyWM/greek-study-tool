@@ -98,8 +98,8 @@ func getJwtValidator() *validator.Validator {
 		validator.RS256,
 		issuerURL.String(),
 		[]string{
-			auth0const.AUTH0_AUDIENCE_1,
-			auth0const.AUTH0_AUDIENCE_2,
+			auth0const.AUTH0_AUDIENCE,
+			auth0const.AUTH0_USER_INFO_URL,
 		},
 		// TODO - can I get get of validator.WithCustomClaims?
 		validator.WithCustomClaims(

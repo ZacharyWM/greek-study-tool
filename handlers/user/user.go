@@ -1,79 +1,77 @@
 package user
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/ZacharyWM/greek-study-tool/database"
 	"github.com/ZacharyWM/greek-study-tool/models"
-	"github.com/auth0/go-jwt-middleware/v2/validator"
-	"github.com/gin-contrib/sessions"
+	"github.com/ZacharyWM/greek-study-tool/platform/auth0const"
 	"github.com/gin-gonic/gin"
 )
 
+type Auth0UserInfo struct {
+	Sub           string `json:"sub"`
+	GivenName     string `json:"given_name"`
+	FamilyName    string `json:"family_name"`
+	Nickname      string `json:"nickname"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
+	UpdatedAt     string `json:"updated_at"`
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+}
+
 // Handler for the user endpoint
 func Handler(c *gin.Context) {
+	jwt := c.GetHeader("Authorization")
 
-	ctxClaims, ok := c.Get("claims")
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get claims"})
+	userInfo, err := GetAuth0UserInfo(jwt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	claims := ctxClaims.(*validator.ValidatedClaims)
-	fmt.Println(claims.RegisteredClaims.Subject)
 
 	// TODO, get user data and save it. Maybe FE can send it.
-	c.JSON(http.StatusOK, gin.H{"user": "updated"})
+	c.JSON(http.StatusOK, userInfo)
+}
 
-	return
-	session := sessions.Default(c)
-	profile := session.Get("profile")
+// GetAuth0UserInfo fetches the user information from Auth0's userinfo endpoint
+// using the provided JWT token for authorization
+func GetAuth0UserInfo(jwt string) (Auth0UserInfo, error) {
+	var userInfo Auth0UserInfo
 
-	// If profile doesn't exist in session, return empty response
-	if profile == nil {
-		c.JSON(http.StatusOK, gin.H{})
-		return
-	}
-
-	// Convert profile to map
-	profileMap, ok := profile.(map[string]interface{})
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user profile"})
-		return
-	}
-
-	// Get user name from profile
-	name, ok := profileMap["name"].(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user name"})
-		return
-	}
-
-	_, ok = profileMap["sub"].(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user sub"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"name": name})
-	return
-
-	// Check if user exists
-	var user models.User
-	err := database.DB.QueryRow("SELECT id, name FROM users WHERE name = $1", name).Scan(&user.ID, &user.Name)
+	req, err := http.NewRequest("GET", auth0const.AUTH0_USER_INFO_URL, nil)
 	if err != nil {
-		// User doesn't exist, create new user
-		err = database.DB.QueryRow("INSERT INTO users (name) VALUES ($1) RETURNING id", name).Scan(&user.ID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
-			return
-		}
-		user.Name = name
+		return userInfo, fmt.Errorf("error creating request: %w", err)
 	}
 
-	// Return user data
-	c.JSON(http.StatusOK, user)
+	req.Header.Add("Authorization", jwt)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return userInfo, fmt.Errorf("error making request to Auth0: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return userInfo, fmt.Errorf("received non-200 response from Auth0: %d, body: %s", resp.StatusCode, string(body))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return userInfo, fmt.Errorf("error reading response body: %w", err)
+	}
+
+	if err := json.Unmarshal(body, &userInfo); err != nil {
+		return userInfo, fmt.Errorf("error parsing user info JSON: %w", err)
+	}
+
+	return userInfo, nil
 }
 
 // GetUserByID retrieves a user by ID from the database
