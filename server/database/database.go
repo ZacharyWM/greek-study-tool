@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 
 	_ "github.com/lib/pq"
 )
@@ -25,28 +26,35 @@ func InitDB() {
 		log.Fatalf("Error opening database: %v", err)
 	}
 
-	// Check the connection
 	err = DB.Ping()
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
 
-	fmt.Println("Database connection established")
+	slog.Info("Database connection established")
 }
 
-// RunMigrations runs database migrations
+// TODO - work out a better migration strategy
 func RunMigrations() {
-	// Create users table if it doesn't exist
 	createTableQuery := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
-		name VARCHAR(255) NOT NULL
+		idp_id VARCHAR(255) NOT NULL,
+		first_name VARCHAR(255),
+		last_name VARCHAR(255),
+		nickname VARCHAR(255),
+		name VARCHAR(255),
+		picture TEXT,
+		email VARCHAR(255),
+		email_verified BOOLEAN
 	);
+	
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_users_idp_id ON users(idp_id);
 	`
 	_, err := DB.Exec(createTableQuery)
 	if err != nil {
 		log.Fatalf("Error creating users table: %v", err)
 	}
 
-	fmt.Println("Database migrations completed")
+	slog.Info("Database migrations completed")
 }

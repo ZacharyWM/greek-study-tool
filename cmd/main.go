@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ZacharyWM/greek-study-tool/server/database"
 	"github.com/ZacharyWM/greek-study-tool/server/router"
 )
 
@@ -14,11 +15,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	dir = strings.TrimSuffix(dir, "tmp")
+	dir = strings.TrimSuffix(dir, "tmp") // so it work with 'air' hot reloader
 	dir = strings.TrimSuffix(dir, "cmd") // so it works from debugger
 
-	// database.InitDB()
-	// database.RunMigrations()
+	database.InitDB()
+	database.RunMigrations()
 
 	r := router.New(dir)
 

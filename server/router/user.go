@@ -8,6 +8,7 @@ import (
 
 	"github.com/ZacharyWM/greek-study-tool/server/auth"
 	"github.com/ZacharyWM/greek-study-tool/server/database"
+	"github.com/ZacharyWM/greek-study-tool/server/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,6 +32,7 @@ type Auth0UserInfo struct {
 
 // upsertUserHandler for the user endpoint
 func upsertUserHandler(c *gin.Context) {
+	ctx := c.Request.Context()
 	jwt := c.GetHeader("Authorization")
 
 	userInfo, err := getAuth0UserInfo(jwt)
@@ -39,8 +41,39 @@ func upsertUserHandler(c *gin.Context) {
 		return
 	}
 
-	// TODO, get user data and save it. Maybe FE can send it.
-	c.JSON(http.StatusOK, userInfo)
+	user, err := service.GetUserByIdpID(ctx, userInfo.Sub)
+
+	upsertUser := service.User{
+		IdpID:         userInfo.Sub,
+		FirstName:     userInfo.GivenName,
+		LastName:      userInfo.FamilyName,
+		Nickname:      userInfo.Nickname,
+		Name:          userInfo.Name,
+		Picture:       userInfo.Picture,
+		Email:         userInfo.Email,
+		EmailVerified: userInfo.EmailVerified,
+	}
+
+	insert := err != nil || user.ID == 0
+
+	if insert {
+		userID, err := service.InsertUser(ctx, upsertUser)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"userId": userID})
+		return
+	}
+
+	err = service.UpdateUserByIdpID(ctx, upsertUser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"userId": user.ID})
 }
 
 // getAuth0UserInfo fetches the user information from Auth0's userinfo endpoint
