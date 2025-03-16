@@ -1,4 +1,4 @@
-package callback
+package handlers
 
 import (
 	"net/http"
@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Handler for our callback.
-func Handler(auth *auth.Authenticator) gin.HandlerFunc {
+// CallbackHandler for our callback.
+func CallbackHandler(auth *auth.Authenticator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 		if ctx.Query("state") != session.Get("state") {

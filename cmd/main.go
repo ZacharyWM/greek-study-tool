@@ -10,10 +10,7 @@ import (
 	"strings"
 
 	"github.com/ZacharyWM/greek-study-tool/server/auth"
-	"github.com/ZacharyWM/greek-study-tool/server/handlers/callback"
-	"github.com/ZacharyWM/greek-study-tool/server/handlers/login"
-	"github.com/ZacharyWM/greek-study-tool/server/handlers/logout"
-	"github.com/ZacharyWM/greek-study-tool/server/handlers/user"
+	"github.com/ZacharyWM/greek-study-tool/server/handlers"
 	"github.com/ZacharyWM/greek-study-tool/server/middleware"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -58,14 +55,14 @@ func main() {
 		log.Fatalf("Failed to initialize the authenticator: %v", err)
 	}
 
-	r.GET("/login", login.Handler(auth))
-	r.GET("/callback", callback.Handler(auth))
-	r.GET("/logout", logout.Handler)
+	r.GET("/login", handlers.LoginHandler(auth))
+	r.GET("/callback", handlers.CallbackHandler(auth))
+	r.GET("/logout", handlers.LogoutHandler)
 
 	secureRouter := r.Group("/api", middleware.JwtAuth())
 
-	secureRouter.GET("/user/:id", user.GetUserByID)
-	secureRouter.POST("/user", user.Handler)
+	secureRouter.GET("/user/:id", handlers.GetUserByID)
+	secureRouter.POST("/user", handlers.UpsertUserHandler)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.Status(http.StatusNotFound)

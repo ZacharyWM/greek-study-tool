@@ -1,4 +1,4 @@
-package user
+package handlers
 
 import (
 	"encoding/json"
@@ -29,11 +29,11 @@ type Auth0UserInfo struct {
 	EmailVerified bool   `json:"email_verified"`
 }
 
-// Handler for the user endpoint
-func Handler(c *gin.Context) {
+// UpsertUserHandler for the user endpoint
+func UpsertUserHandler(c *gin.Context) {
 	jwt := c.GetHeader("Authorization")
 
-	userInfo, err := GetAuth0UserInfo(jwt)
+	userInfo, err := getAuth0UserInfo(jwt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -43,8 +43,8 @@ func Handler(c *gin.Context) {
 	c.JSON(http.StatusOK, userInfo)
 }
 
-// GetAuth0UserInfo fetches the user information from Auth0's userinfo endpoint
-func GetAuth0UserInfo(jwt string) (Auth0UserInfo, error) {
+// getAuth0UserInfo fetches the user information from Auth0's userinfo endpoint
+func getAuth0UserInfo(jwt string) (Auth0UserInfo, error) {
 	var userInfo Auth0UserInfo
 
 	req, err := http.NewRequest("GET", auth.AUTH0_USER_INFO_URL, nil)
@@ -78,7 +78,7 @@ func GetAuth0UserInfo(jwt string) (Auth0UserInfo, error) {
 	return userInfo, nil
 }
 
-// GetUserByID retrieves a user by ID from the database
+// TODO - move to a data/service layer
 func GetUserByID(c *gin.Context) {
 	id := c.Param("id")
 
