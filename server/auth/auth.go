@@ -17,7 +17,7 @@ import (
 const (
 	AUTH0_CLIENT_ID     = "epvq6lnMUVpNxVOYaoYtADPxeFwqgcY0"
 	AUTH0_DOMAIN        = "zachsauth.us.auth0.com"
-	AUTH0_CLIENT_SECRET = "-"
+	AUTH0_CLIENT_SECRET = "" // Not needed for JWT validation
 	AUTH0_CALLBACK_URL  = "https://zachm.dev/callback"
 
 	AUTH0_AUDIENCE      = "https://zachsauth.us.auth0.com/api/v2/"
