@@ -3,19 +3,16 @@ package middleware
 import (
 	"log"
 	"net/http"
-	"net/url"
 	"strings"
-	"time"
 
-	"github.com/ZacharyWM/greek-study-tool/server/auth0const"
-	"github.com/auth0/go-jwt-middleware/v2/jwks"
+	"github.com/ZacharyWM/greek-study-tool/server/authenticator"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/gin-gonic/gin"
 )
 
 // JwtAuth is a middleware that will check the validity of our JWT.
 func JwtAuth() gin.HandlerFunc {
-	jwtValidator := getJwtValidator()
+	jwtValidator := authenticator.GetJwtValidator()
 
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
@@ -41,27 +38,4 @@ func JwtAuth() gin.HandlerFunc {
 
 		ctx.Next()
 	}
-}
-
-func getJwtValidator() *validator.Validator {
-	issuerURL, err := url.Parse("https://" + auth0const.AUTH0_DOMAIN + "/")
-	if err != nil {
-		log.Fatalf("Failed to parse the issuer url: %v", err)
-	}
-
-	provider := jwks.NewCachingProvider(issuerURL, 5*time.Minute)
-
-	jwtValidator, err := validator.New(
-		provider.KeyFunc,
-		validator.RS256,
-		issuerURL.String(),
-		[]string{
-			auth0const.AUTH0_AUDIENCE,
-			auth0const.AUTH0_USER_INFO_URL,
-		},
-	)
-	if err != nil {
-		log.Fatalf("Failed to set up the jwt validator")
-	}
-	return jwtValidator
 }

@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ZacharyWM/greek-study-tool/server/auth0const"
+	"github.com/ZacharyWM/greek-study-tool/server/authenticator"
 	"github.com/ZacharyWM/greek-study-tool/server/database"
 	"github.com/gin-gonic/gin"
 )
@@ -47,7 +47,7 @@ func Handler(c *gin.Context) {
 func GetAuth0UserInfo(jwt string) (Auth0UserInfo, error) {
 	var userInfo Auth0UserInfo
 
-	req, err := http.NewRequest("GET", auth0const.AUTH0_USER_INFO_URL, nil)
+	req, err := http.NewRequest("GET", authenticator.AUTH0_USER_INFO_URL, nil)
 	if err != nil {
 		return userInfo, fmt.Errorf("error creating request: %w", err)
 	}
