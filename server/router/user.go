@@ -1,4 +1,4 @@
-package handlers
+package router
 
 import (
 	"encoding/json"
@@ -29,8 +29,8 @@ type Auth0UserInfo struct {
 	EmailVerified bool   `json:"email_verified"`
 }
 
-// UpsertUserHandler for the user endpoint
-func UpsertUserHandler(c *gin.Context) {
+// upsertUserHandler for the user endpoint
+func upsertUserHandler(c *gin.Context) {
 	jwt := c.GetHeader("Authorization")
 
 	userInfo, err := getAuth0UserInfo(jwt)
@@ -78,10 +78,10 @@ func getAuth0UserInfo(jwt string) (Auth0UserInfo, error) {
 	return userInfo, nil
 }
 
-// TODO - move to a data/service layer
-func GetUserByID(c *gin.Context) {
+func getUserHandler(c *gin.Context) {
 	id := c.Param("id")
 
+	// TODO - move to a data/service layer
 	var user User
 	err := database.DB.QueryRow("SELECT id, name FROM users WHERE id = $1", id).Scan(&user.ID, &user.Name)
 	if err != nil {

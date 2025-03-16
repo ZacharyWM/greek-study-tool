@@ -1,4 +1,4 @@
-package handlers
+package router
 
 import (
 	"crypto/rand"
@@ -11,8 +11,8 @@ import (
 	"github.com/ZacharyWM/greek-study-tool/server/auth"
 )
 
-// LoginHandler for our login.
-func LoginHandler(auth *auth.Authenticator) gin.HandlerFunc {
+// loginHandler for our login.
+func loginHandler(auth *auth.Authenticator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		state, err := generateRandomState()
 		if err != nil {
