@@ -8,11 +8,11 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
-	"github.com/ZacharyWM/greek-study-tool/server/authenticator"
+	"github.com/ZacharyWM/greek-study-tool/server/auth"
 )
 
 // Handler for our login.
-func Handler(auth *authenticator.Authenticator) gin.HandlerFunc {
+func Handler(auth *auth.Authenticator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		state, err := generateRandomState()
 		if err != nil {

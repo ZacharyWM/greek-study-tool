@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ZacharyWM/greek-study-tool/server/authenticator"
+	"github.com/ZacharyWM/greek-study-tool/server/auth"
 	"github.com/ZacharyWM/greek-study-tool/server/handlers/callback"
 	"github.com/ZacharyWM/greek-study-tool/server/handlers/login"
 	"github.com/ZacharyWM/greek-study-tool/server/handlers/logout"
@@ -53,7 +53,7 @@ func main() {
 	store := cookie.NewStore([]byte("secret"))
 	r.Use(sessions.Sessions("auth-session", store))
 
-	auth, err := authenticator.New()
+	auth, err := auth.New()
 	if err != nil {
 		log.Fatalf("Failed to initialize the authenticator: %v", err)
 	}

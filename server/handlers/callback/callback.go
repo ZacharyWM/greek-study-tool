@@ -3,13 +3,13 @@ package callback
 import (
 	"net/http"
 
-	"github.com/ZacharyWM/greek-study-tool/server/authenticator"
+	"github.com/ZacharyWM/greek-study-tool/server/auth"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
 // Handler for our callback.
-func Handler(auth *authenticator.Authenticator) gin.HandlerFunc {
+func Handler(auth *auth.Authenticator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 		if ctx.Query("state") != session.Get("state") {

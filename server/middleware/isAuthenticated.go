@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ZacharyWM/greek-study-tool/server/authenticator"
+	"github.com/ZacharyWM/greek-study-tool/server/auth"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/gin-gonic/gin"
 )
 
 // JwtAuth is a middleware that will check the validity of our JWT.
 func JwtAuth() gin.HandlerFunc {
-	jwtValidator := authenticator.GetJwtValidator()
+	jwtValidator := auth.GetJwtValidator()
 
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")

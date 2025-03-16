@@ -1,4 +1,4 @@
-package authenticator
+package auth
 
 import (
 	"context"
@@ -24,13 +24,11 @@ const (
 	AUTH0_USER_INFO_URL = "https://zachsauth.us.auth0.com/userinfo"
 )
 
-// Authenticator is used to authenticate our users.
 type Authenticator struct {
 	*oidc.Provider
 	oauth2.Config
 }
 
-// New instantiates the *Authenticator.
 func New() (*Authenticator, error) {
 	provider, err := oidc.NewProvider(
 		context.Background(),
@@ -54,7 +52,6 @@ func New() (*Authenticator, error) {
 	}, nil
 }
 
-// VerifyIDToken verifies that an *oauth2.Token is a valid *oidc.IDToken.
 func (a *Authenticator) VerifyIDToken(ctx context.Context, token *oauth2.Token) (*oidc.IDToken, error) {
 	rawIDToken, ok := token.Extra("id_token").(string)
 	if !ok {
