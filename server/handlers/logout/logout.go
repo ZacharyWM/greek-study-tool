@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/ZacharyWM/greek-study-tool/platform/auth0const"
+	"github.com/ZacharyWM/greek-study-tool/server/auth0const"
 	"github.com/gin-gonic/gin"
 )
 

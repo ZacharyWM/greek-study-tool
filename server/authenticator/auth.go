@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ZacharyWM/greek-study-tool/platform/auth0const"
+	"github.com/ZacharyWM/greek-study-tool/server/auth0const"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )

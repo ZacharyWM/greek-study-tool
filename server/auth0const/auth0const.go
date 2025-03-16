@@ -1,5 +1,6 @@
 package auth0const
 
+// TODO - use env vars
 const (
 	AUTH0_CLIENT_ID     = "-"
 	AUTH0_DOMAIN        = "zachsauth.us.auth0.com"

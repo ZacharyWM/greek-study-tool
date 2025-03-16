@@ -8,7 +8,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
-	"github.com/ZacharyWM/greek-study-tool/platform/authenticator"
+	"github.com/ZacharyWM/greek-study-tool/server/authenticator"
 )
 
 // Handler for our login.

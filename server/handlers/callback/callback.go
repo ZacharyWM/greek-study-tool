@@ -3,7 +3,7 @@ package callback
 import (
 	"net/http"
 
-	"github.com/ZacharyWM/greek-study-tool/platform/authenticator"
+	"github.com/ZacharyWM/greek-study-tool/server/authenticator"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )

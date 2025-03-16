@@ -6,11 +6,16 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ZacharyWM/greek-study-tool/database"
-	"github.com/ZacharyWM/greek-study-tool/models"
-	"github.com/ZacharyWM/greek-study-tool/platform/auth0const"
+	"github.com/ZacharyWM/greek-study-tool/server/auth0const"
+	"github.com/ZacharyWM/greek-study-tool/server/database"
 	"github.com/gin-gonic/gin"
 )
+
+// User represents a user in the system
+type User struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
 
 type Auth0UserInfo struct {
 	Sub           string `json:"sub"`
@@ -77,7 +82,7 @@ func GetAuth0UserInfo(jwt string) (Auth0UserInfo, error) {
 func GetUserByID(c *gin.Context) {
 	id := c.Param("id")
 
-	var user models.User
+	var user User
 	err := database.DB.QueryRow("SELECT id, name FROM users WHERE id = $1", id).Scan(&user.ID, &user.Name)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
