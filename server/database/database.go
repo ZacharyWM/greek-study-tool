@@ -11,6 +11,7 @@ import (
 
 var DB *sql.DB
 
+// TODO - replace with env vars
 const (
 	host     = "127.0.0.1"
 	port     = 5432
