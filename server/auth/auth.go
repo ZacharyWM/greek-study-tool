@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/auth0/go-jwt-middleware/v2/jwks"
@@ -13,15 +14,14 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// TODO - use env vars
-const (
-	AUTH0_CLIENT_ID     = "epvq6lnMUVpNxVOYaoYtADPxeFwqgcY0"
-	AUTH0_DOMAIN        = "zachsauth.us.auth0.com"
+var (
+	AUTH0_CLIENT_ID     = envOrDefault("AUTH0_CLIENT_ID", "epvq6lnMUVpNxVOYaoYtADPxeFwqgcY0")
+	AUTH0_DOMAIN        = envOrDefault("AUTH0_DOMAIN", "zachsauth.us.auth0.com")
 	AUTH0_CLIENT_SECRET = "" // Not needed for JWT validation
-	AUTH0_CALLBACK_URL  = "https://zachm.dev/callback"
+	AUTH0_CALLBACK_URL  = envOrDefault("AUTH0_CALLBACK_URL", "https://zachm.dev/callback")
 
-	AUTH0_AUDIENCE      = "https://zachsauth.us.auth0.com/api/v2/"
-	AUTH0_USER_INFO_URL = "https://zachsauth.us.auth0.com/userinfo"
+	AUTH0_AUDIENCE      = envOrDefault("AUTH0_AUDIENCE", "https://zachsauth.us.auth0.com/api/v2/")
+	AUTH0_USER_INFO_URL = envOrDefault("AUTH0_USER_INFO_URL", "https://zachsauth.us.auth0.com/userinfo")
 )
 
 type Authenticator struct {
@@ -86,4 +86,12 @@ func GetJwtValidator() *validator.Validator {
 		log.Fatalf("Failed to set up the jwt validator")
 	}
 	return jwtValidator
+}
+
+func envOrDefault(key, def string) string {
+	val := os.Getenv(key)
+	if val != "" {
+		return val
+	}
+	return def
 }

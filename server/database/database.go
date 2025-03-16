@@ -12,14 +12,17 @@ import (
 var DB *sql.DB
 
 const (
-	host   = "127.0.0.1"
-	port   = 5432
-	dbName = "greek_study_tool"
+	host     = "127.0.0.1"
+	port     = 5432
+	user     = "postgres"
+	password = "password1"
+	dbName   = "greek_study_tool"
 )
 
 // InitDB initializes the database connection
 func InitDB() {
-	connectionString := fmt.Sprintf("host=%s port=%d dbname=%s sslmode=disable", host, port, dbName)
+	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbName)
 	var err error
 	DB, err = sql.Open("postgres", connectionString)
 	if err != nil {
