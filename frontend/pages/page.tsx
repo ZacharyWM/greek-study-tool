@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "../components/ui/button";
 import { Textarea } from "../components/ui/textarea";
 import ParseWordDialog from "../components/ParseWordDialog";
@@ -11,7 +11,7 @@ import { getParsingClass } from "../lib/parsing-styles";
 import { Slider } from "../components/ui/slider";
 import { Label } from "../components/ui/label";
 import type { Section, Word, WordParsing } from "../types/models";
-
+import debounce from "lodash/debounce";
 import { useAuth0 } from "@auth0/auth0-react";
 
 interface Line {
@@ -39,11 +39,19 @@ export default function Home() {
     startY: number;
   } | null>(null);
   const [lineSpacing, setLineSpacing] = useState(1.6);
+  const [analysisId, setAnalysisId] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
 
-  const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const {
+    user,
+    isAuthenticated,
+    loginWithRedirect,
+    logout,
+    getAccessTokenSilently,
+  } = useAuth0();
 
   const logoutWithRedirect = () =>
     logout({
@@ -74,6 +82,71 @@ export default function Home() {
     };
   }, []);
 
+  // Function to save analysis data to the backend
+  const saveAnalysis = async () => {
+    if (!isAuthenticated) return;
+
+    console.log("Saving analysis...");
+    try {
+      setIsSaving(true);
+      const token = await getAccessTokenSilently();
+
+      // Combine all data into a single details object
+      const analysisData = {
+        sections,
+        lines,
+        lineSpacing,
+      };
+
+      const requestOptions = {
+        method: analysisId ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          details: analysisData,
+        }),
+      };
+
+      const url = analysisId ? `/api/analyses/${analysisId}` : "/api/analyses";
+
+      const response = await fetch(url, requestOptions);
+
+      if (response.ok) {
+        const data = await response.json();
+        // If this was a new analysis, save the ID for future updates
+        if (!analysisId && data.id) {
+          setAnalysisId(data.id);
+        }
+        console.log("Analysis saved successfully");
+      } else {
+        console.error("Failed to save analysis:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error saving analysis:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Create a debounced version of saveAnalysis
+  const debouncedSave = useCallback(
+    debounce(() => {
+      console.log("Debounced save");
+      saveAnalysis();
+    }, 1000),
+    [sections, lines, lineSpacing, analysisId, isAuthenticated]
+  );
+
+  // Trigger save whenever data changes
+  useEffect(() => {
+    console.log("Data changed, sections length:", sections.length);
+    if (sections.length > 0) {
+      debouncedSave();
+    }
+  }, [sections, lines, lineSpacing, debouncedSave]);
+
   const handleTextSubmit = () => {
     if (inputText.trim()) {
       const newSection: Section = {
@@ -89,6 +162,8 @@ export default function Home() {
       setSections([newSection]);
       setInputText("");
       setLines([]);
+      // Reset analysis ID when submitting new text
+      setAnalysisId(null);
     }
   };
 
@@ -138,7 +213,6 @@ export default function Home() {
         ...section,
         words: section.words.map((w) => {
           if (w.id === wordId) {
-            console.log(`word label change: ${w.text} to ${newLabel}`);
             return {
               ...w,
               label: newLabel,
@@ -232,6 +306,9 @@ export default function Home() {
           onValueChange={handleLineSpacingChange}
           className="w-full max-w-xs"
         />
+        {/* {isSaving && (
+          <span className="ml-4 text-sm text-gray-500">Saving...</span>
+        )} */}
       </div>
       <div className="mb-4">
         <Textarea
