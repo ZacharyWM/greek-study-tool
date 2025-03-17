@@ -69,7 +69,7 @@ func UpdateAnalysis(analysis Analysis) error {
 	return nil
 }
 
-func GetAnalysisById(id int, userId int) (*Analysis, error) {
+func GetAnalysisById(id int, userId int) (Analysis, error) {
 	var analysis Analysis
 	var detailsJSON []byte
 
@@ -80,17 +80,17 @@ func GetAnalysisById(id int, userId int) (*Analysis, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("analysis not found")
+			return analysis, errors.New("analysis not found")
 		}
 		slog.Error("Failed to get analysis", "error", err)
-		return nil, err
+		return analysis, err
 	}
 
 	analysis.Details = make(map[string]interface{})
 	if err := json.Unmarshal(detailsJSON, &analysis.Details); err != nil {
 		slog.Error("Failed to unmarshal details", "error", err)
-		return nil, err
+		return analysis, err
 	}
 
-	return &analysis, nil
+	return analysis, nil
 }

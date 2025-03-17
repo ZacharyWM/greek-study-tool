@@ -50,41 +50,35 @@ func createAnalysisHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"id": id})
 }
 
-// updateAnalysisHandler handles updating an existing analysis
 func updateAnalysisHandler(c *gin.Context) {
-	// Get user's ID from JWT claims
-	claims, exists := c.Get("auth")
-	if !exists {
+	claims := auth.ClaimsFromContext(c)
+	if claims == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	idpID := claims.(map[string]interface{})["sub"].(string)
+	idpID := claims.RegisteredClaims.Subject
 	userID, err := getUserIDFromIdpID(c, idpID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user ID"})
 		return
 	}
 
-	// Get analysis ID from URL
 	analysisID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid analysis ID"})
 		return
 	}
 
-	// Parse the request body
 	var analysisUpdate service.Analysis
 	if err := c.ShouldBindJSON(&analysisUpdate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Set the user ID and analysis ID
 	analysisUpdate.UserID = userID
 	analysisUpdate.ID = analysisID
 
-	// Update the analysis
 	err = service.UpdateAnalysis(analysisUpdate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -94,30 +88,26 @@ func updateAnalysisHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-// getAnalysisHandler handles retrieving a specific analysis
 func getAnalysisHandler(c *gin.Context) {
-	// Get user's ID from JWT claims
-	claims, exists := c.Get("auth")
-	if !exists {
+	claims := auth.ClaimsFromContext(c)
+	if claims == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	idpID := claims.(map[string]interface{})["sub"].(string)
+	idpID := claims.RegisteredClaims.Subject
 	userID, err := getUserIDFromIdpID(c, idpID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user ID"})
 		return
 	}
 
-	// Get analysis ID from URL
 	analysisID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid analysis ID"})
 		return
 	}
 
-	// Get the analysis
 	analysis, err := service.GetAnalysisById(analysisID, userID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
