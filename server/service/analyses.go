@@ -73,10 +73,18 @@ func GetAnalysisById(id int, userId int) (Analysis, error) {
 	var analysis Analysis
 	var detailsJSON []byte
 
-	err := database.DB.QueryRow(
-		"SELECT id, user_id, details FROM analyses WHERE id = $1 AND user_id = $2",
-		id, userId,
-	).Scan(&analysis.ID, &analysis.UserID, &detailsJSON)
+	// err := database.DB.QueryRow(
+	// 	"SELECT id, user_id, details FROM analyses WHERE id = $1 AND user_id = $2",
+	// 	id, userId,
+	// ).Scan(&analysis.ID, &analysis.UserID, &detailsJSON)
+
+	// TODO - this is temporary until the front end can save multiple analyses
+	err := database.DB.QueryRow(`
+	SELECT id, user_id, details 
+	FROM analyses 
+	WHERE user_id = $1
+	limit 1
+	`, userId).Scan(&analysis.ID, &analysis.UserID, &detailsJSON)
 
 	if err != nil {
 		if err == sql.ErrNoRows {

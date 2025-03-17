@@ -39,8 +39,9 @@ export default function Home() {
     startY: number;
   } | null>(null);
   const [lineSpacing, setLineSpacing] = useState(1.6);
-  const [analysisId, setAnalysisId] = useState<number | null>(null);
+  const [analysisId, setAnalysisId] = useState<number>(1); // TODO - probably change to null or 0 later
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
@@ -52,6 +53,47 @@ export default function Home() {
     logout,
     getAccessTokenSilently,
   } = useAuth0();
+
+  const fetchAnalysis = async (id: number) => {
+    if (!isAuthenticated) return;
+
+    try {
+      setIsLoading(true);
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`/api/analyses/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAnalysisId(data.id);
+
+        if (data.details) {
+          if (data.details.sections) setSections(data.details.sections);
+          if (data.details.lines) setLines(data.details.lines);
+          if (data.details.lineSpacing)
+            setLineSpacing(data.details.lineSpacing);
+        }
+        console.log("Analysis loaded successfully");
+      } else {
+        console.error("Failed to fetch analysis:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error fetching analysis:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Add useEffect to load analysis when authenticated
+  useEffect(() => {
+    console.log("Authenticated:", isAuthenticated, "Analysis ID:", analysisId);
+    if (isAuthenticated && analysisId) {
+      fetchAnalysis(analysisId);
+    }
+  }, [isAuthenticated]);
 
   const logoutWithRedirect = () =>
     logout({
@@ -163,7 +205,7 @@ export default function Home() {
       setInputText("");
       setLines([]);
       // Reset analysis ID when submitting new text
-      setAnalysisId(null);
+      setAnalysisId(0);
     }
   };
 
@@ -306,9 +348,12 @@ export default function Home() {
           onValueChange={handleLineSpacingChange}
           className="w-full max-w-xs"
         />
-        {/* {isSaving && (
+        {isLoading && (
+          <span className="ml-4 text-sm text-gray-500">Loading...</span>
+        )}
+        {isSaving && (
           <span className="ml-4 text-sm text-gray-500">Saving...</span>
-        )} */}
+        )}
       </div>
       <div className="mb-4">
         <Textarea
