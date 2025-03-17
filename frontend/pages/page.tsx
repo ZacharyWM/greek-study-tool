@@ -40,8 +40,6 @@ export default function Home() {
   } | null>(null);
   const [lineSpacing, setLineSpacing] = useState(1.6);
   const [analysisId, setAnalysisId] = useState<number>(1); // TODO - probably change to null or 0 later
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
@@ -58,7 +56,6 @@ export default function Home() {
     if (!isAuthenticated) return;
 
     try {
-      setIsLoading(true);
       const token = await getAccessTokenSilently();
       const response = await fetch(`/api/analyses/${id}`, {
         headers: {
@@ -82,8 +79,6 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Error fetching analysis:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -130,7 +125,6 @@ export default function Home() {
 
     console.log("Saving analysis...");
     try {
-      setIsSaving(true);
       const token = await getAccessTokenSilently();
 
       // Combine all data into a single details object
@@ -167,8 +161,6 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Error saving analysis:", error);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -183,7 +175,6 @@ export default function Home() {
 
   // Trigger save whenever data changes
   useEffect(() => {
-    console.log("Data changed, sections length:", sections.length);
     if (sections.length > 0) {
       debouncedSave();
     }
@@ -204,8 +195,8 @@ export default function Home() {
       setSections([newSection]);
       setInputText("");
       setLines([]);
-      // Reset analysis ID when submitting new text
-      setAnalysisId(0);
+      // TODO - we want to do this later
+      // setAnalysisId(0);
     }
   };
 
@@ -348,12 +339,6 @@ export default function Home() {
           onValueChange={handleLineSpacingChange}
           className="w-full max-w-xs"
         />
-        {isLoading && (
-          <span className="ml-4 text-sm text-gray-500">Loading...</span>
-        )}
-        {isSaving && (
-          <span className="ml-4 text-sm text-gray-500">Saving...</span>
-        )}
       </div>
       <div className="mb-4">
         <Textarea
