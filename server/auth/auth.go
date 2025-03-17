@@ -11,6 +11,7 @@ import (
 	"github.com/auth0/go-jwt-middleware/v2/jwks"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 )
 
@@ -86,6 +87,15 @@ func GetJwtValidator() *validator.Validator {
 		log.Fatalf("Failed to set up the jwt validator")
 	}
 	return jwtValidator
+}
+
+func ClaimsFromContext(ctx *gin.Context) *validator.ValidatedClaims {
+	claims, exists := ctx.Get("claims")
+	if !exists {
+		return nil
+	}
+
+	return claims.(*validator.ValidatedClaims)
 }
 
 func envOrDefault(key, def string) string {

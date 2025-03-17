@@ -39,6 +39,10 @@ func New(appDir string) *gin.Engine {
 	secureRouter.GET("/user/:id", getUserHandler)
 	secureRouter.POST("/user", upsertUserHandler)
 
+	secureRouter.POST("/analyses", createAnalysisHandler)
+	secureRouter.PATCH("/analyses/:id", updateAnalysisHandler)
+	secureRouter.GET("/analyses/:id", getAnalysisHandler)
+
 	r.NoRoute(func(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 	})

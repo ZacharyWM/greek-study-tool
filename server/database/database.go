@@ -22,8 +22,12 @@ const (
 
 // InitDB initializes the database connection
 func InitDB() {
-	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbName)
+	// local use
+	connectionString := fmt.Sprintf("host=%s port=%d dbname=%s sslmode=disable", host, port, dbName)
+
+	// vm use
+	// connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbName)
+
 	var err error
 	DB, err = sql.Open("postgres", connectionString)
 	if err != nil {
@@ -40,7 +44,7 @@ func InitDB() {
 
 // TODO - work out a better migration strategy
 func RunMigrations() {
-	createTableQuery := `
+	createUsersTableCmd := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
 		idp_id VARCHAR(255) NOT NULL,
@@ -55,9 +59,23 @@ func RunMigrations() {
 	
 	CREATE UNIQUE INDEX IF NOT EXISTS idx_users_idp_id ON users(idp_id);
 	`
-	_, err := DB.Exec(createTableQuery)
+	_, err := DB.Exec(createUsersTableCmd)
 	if err != nil {
 		log.Fatalf("Error creating users table: %v", err)
+	}
+
+	createAnalyesesTableCmd := `
+		CREATE TABLE IF NOT EXISTS analyses (
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id),
+		details JSONB
+	);
+	
+	CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id);
+	`
+	_, err = DB.Exec(createAnalyesesTableCmd)
+	if err != nil {
+		log.Fatalf("Error creating analyses table: %v", err)
 	}
 
 	slog.Info("Database migrations completed")
