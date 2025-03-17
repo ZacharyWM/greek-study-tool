@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "../components/ui/button";
 import { Textarea } from "../components/ui/textarea";
 import ParseWordDialog from "../components/ParseWordDialog";
@@ -11,7 +11,7 @@ import { getParsingClass } from "../lib/parsing-styles";
 import { Slider } from "../components/ui/slider";
 import { Label } from "../components/ui/label";
 import type { Section, Word, WordParsing } from "../types/models";
-
+import debounce from "lodash/debounce";
 import { useAuth0 } from "@auth0/auth0-react";
 
 interface Line {
@@ -39,11 +39,56 @@ export default function Home() {
     startY: number;
   } | null>(null);
   const [lineSpacing, setLineSpacing] = useState(1.6);
+  const [analysisId, setAnalysisId] = useState<number>(1); // TODO - probably change to null or 0 later
   const containerRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
 
-  const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const {
+    user,
+    isAuthenticated,
+    loginWithRedirect,
+    logout,
+    getAccessTokenSilently,
+  } = useAuth0();
+
+  const fetchAnalysis = async (id: number) => {
+    if (!isAuthenticated) return;
+
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`/api/analyses/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAnalysisId(data.id);
+
+        if (data.details) {
+          if (data.details.sections) setSections(data.details.sections);
+          if (data.details.lines) setLines(data.details.lines);
+          if (data.details.lineSpacing)
+            setLineSpacing(data.details.lineSpacing);
+        }
+        console.log("Analysis loaded successfully");
+      } else {
+        console.error("Failed to fetch analysis:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error fetching analysis:", error);
+    }
+  };
+
+  // Add useEffect to load analysis when authenticated
+  useEffect(() => {
+    console.log("Authenticated:", isAuthenticated, "Analysis ID:", analysisId);
+    if (isAuthenticated && analysisId) {
+      fetchAnalysis(analysisId);
+    }
+  }, [isAuthenticated]);
 
   const logoutWithRedirect = () =>
     logout({
@@ -74,6 +119,67 @@ export default function Home() {
     };
   }, []);
 
+  // Function to save analysis data to the backend
+  const saveAnalysis = async () => {
+    if (!isAuthenticated) return;
+
+    console.log("Saving analysis...");
+    try {
+      const token = await getAccessTokenSilently();
+
+      // Combine all data into a single details object
+      const analysisData = {
+        sections,
+        lines,
+        lineSpacing,
+      };
+
+      const requestOptions = {
+        method: analysisId ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          details: analysisData,
+        }),
+      };
+
+      const url = analysisId ? `/api/analyses/${analysisId}` : "/api/analyses";
+
+      const response = await fetch(url, requestOptions);
+
+      if (response.ok) {
+        const data = await response.json();
+        // If this was a new analysis, save the ID for future updates
+        if (!analysisId && data.id) {
+          setAnalysisId(data.id);
+        }
+        console.log("Analysis saved successfully");
+      } else {
+        console.error("Failed to save analysis:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error saving analysis:", error);
+    }
+  };
+
+  // Create a debounced version of saveAnalysis
+  const debouncedSave = useCallback(
+    debounce(() => {
+      console.log("Debounced save");
+      saveAnalysis();
+    }, 1000),
+    [sections, lines, lineSpacing, analysisId, isAuthenticated]
+  );
+
+  // Trigger save whenever data changes
+  useEffect(() => {
+    if (sections.length > 0) {
+      debouncedSave();
+    }
+  }, [sections, lines, lineSpacing, debouncedSave]);
+
   const handleTextSubmit = () => {
     if (inputText.trim()) {
       const newSection: Section = {
@@ -89,6 +195,8 @@ export default function Home() {
       setSections([newSection]);
       setInputText("");
       setLines([]);
+      // TODO - we want to do this later
+      // setAnalysisId(0);
     }
   };
 
@@ -138,7 +246,6 @@ export default function Home() {
         ...section,
         words: section.words.map((w) => {
           if (w.id === wordId) {
-            console.log(`word label change: ${w.text} to ${newLabel}`);
             return {
               ...w,
               label: newLabel,
