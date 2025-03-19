@@ -1,8 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { fetchUserData } from "../api/requests";
 
 export const NavigationBar: React.FC = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const {
     isAuthenticated,
     loginWithRedirect,
@@ -12,16 +14,16 @@ export const NavigationBar: React.FC = () => {
     getAccessTokenSilently,
   } = useAuth0();
 
-  if (isLoading) {
-    return (
-      <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
-        <div className="text-lg font-bold">Greek Bible Study</div>
-        <div className="flex items-center">
-          <span>Loading...</span>
-        </div>
-      </nav>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
+  //       <div className="text-lg font-bold">Greek Bible Study</div>
+  //       <div className="flex items-center">
+  //         <span>Loading...</span>
+  //       </div>
+  //     </nav>
+  //   );
+  // }
 
   useEffect(() => {
     console.log("isAuthenticated", isAuthenticated);
@@ -43,9 +45,59 @@ export const NavigationBar: React.FC = () => {
     loginWithRedirect();
   };
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   return (
     <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
-      <div className="text-lg font-bold">Greek Bible Study</div>
+      <div className="flex items-center">
+        <div className="relative mr-3">
+          <button
+            onClick={toggleDropdown}
+            className="flex items-center focus:outline-none"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
+            </svg>
+          </button>
+
+          {isDropdownOpen && (
+            <div
+              className="absolute left-0 mt-2 w-96 bg-white text-gray-800 rounded-md shadow-lg py-1 z-10"
+              style={{ width: "10rem" }}
+            >
+              <a
+                // TODO - maybe make a route like /analysis/{id} and use root as the default route
+                href="/"
+                className="block px-4 py-2 hover:bg-gray-200"
+                style={{ color: "black" }}
+              >
+                Current Analysis
+              </a>
+              <a
+                href="/history"
+                className="block px-4 py-2 hover:bg-gray-200"
+                style={{ color: "black" }}
+              >
+                History
+              </a>
+            </div>
+          )}
+        </div>
+        <div className="text-lg font-bold">Greek Bible Study</div>
+      </div>
       <div className="flex items-center">
         {isAuthenticated ? (
           <>
