@@ -116,3 +116,26 @@ func getAnalysisHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, analysis)
 }
+
+func getUserAnalysesHandler(c *gin.Context) {
+	claims := auth.ClaimsFromContext(c)
+	if claims == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	idpID := claims.RegisteredClaims.Subject
+	userID, err := getUserIDFromIdpID(c, idpID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user ID"})
+		return
+	}
+
+	analyses, err := service.GetAnalysesForUser(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, analyses)
+}

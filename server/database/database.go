@@ -78,5 +78,17 @@ func RunMigrations() {
 		log.Fatalf("Error creating analyses table: %v", err)
 	}
 
+	addFieldsToAnalyesesTableCmd := `
+		ALTER TABLE analyses 
+		ADD COLUMN title VARCHAR(100),
+		ADD COLUMN description TEXT,
+		ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+		ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+	`
+	_, err = DB.Exec(addFieldsToAnalyesesTableCmd)
+	if err != nil {
+		slog.Error("Error adding fields to analyses table: %v", err)
+	}
+
 	slog.Info("Database migrations completed")
 }
