@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import ParseWordDialog from "../components/ParseWordDialog";
 import WordContextMenu from "../components/WordContextMenu";
@@ -28,6 +29,8 @@ interface Line {
 export default function Home() {
   const [sections, setSections] = useState<Section[]>([]);
   const [inputText, setInputText] = useState("");
+  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState("");
   const [selectedWord, setSelectedWord] = useState<Word | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
@@ -70,8 +73,11 @@ export default function Home() {
         if (data.details) {
           if (data.details.sections) setSections(data.details.sections);
           if (data.details.lines) setLines(data.details.lines);
-          if (data.details.lineSpacing)
+          if (data.details.lineSpacing) {
             setLineSpacing(data.details.lineSpacing);
+          }
+          if (data.title) setTitle(data.title);
+          if (data.description) setDescription(data.description);
         }
         console.log("Analysis loaded successfully");
       } else {
@@ -141,6 +147,8 @@ export default function Home() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          title: title,
+          description: description,
           details: analysisData,
         }),
       };
@@ -170,7 +178,7 @@ export default function Home() {
       console.log("Debounced save");
       saveAnalysis();
     }, 1000),
-    [sections, lines, lineSpacing, analysisId, isAuthenticated]
+    [sections, lines, lineSpacing, analysisId, title, isAuthenticated]
   );
 
   // Trigger save whenever data changes
@@ -178,7 +186,7 @@ export default function Home() {
     if (sections.length > 0) {
       debouncedSave();
     }
-  }, [sections, lines, lineSpacing, debouncedSave]);
+  }, [sections, lines, lineSpacing, debouncedSave, title]);
 
   const handleTextSubmit = () => {
     if (inputText.trim()) {
@@ -192,6 +200,18 @@ export default function Home() {
         phrases: [],
         translation: "",
       };
+
+      const truncateAndClean = (text) => {
+        // Replace line breaks with spaces
+        const noLineBreaks = text.replace(/\r?\n/g, " ");
+        // Replace multiple spaces with single space
+        const singleSpaced = noLineBreaks.replace(/\s+/g, " ");
+        // Return first 100 characters
+        return singleSpaced.substring(0, 100);
+      };
+
+      setDescription(truncateAndClean(inputText));
+
       setSections([newSection]);
       setInputText("");
       setLines([]);
@@ -327,7 +347,18 @@ export default function Home() {
   return (
     <div className="container mx-auto p-4 max-w-4xl" ref={containerRef}>
       <div className="mb-4">
-        <Label htmlFor="line-spacing" className="block mb-2">
+        <div className="flex items-center mb-4">
+          <Label className="text-lg font-semibold mr-2 text-gray-900">
+            Title:{" "}
+          </Label>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="flex-1"
+          />
+        </div>
+
+        <Label htmlFor="line-spacing" className="block mb-2 mt-4 pt-4">
           Line Spacing
         </Label>
         <Slider
@@ -340,65 +371,71 @@ export default function Home() {
           className="w-full max-w-xs"
         />
       </div>
-      <div className="mb-4">
-        <Textarea
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Paste your Greek text here..."
-          className="w-full min-h-[100px] greek-text"
-        />
-        <Button onClick={handleTextSubmit} className="mt-2">
-          Submit Text
-        </Button>
-      </div>
-      <div
-        className="border p-4 pt-8 rounded-lg relative"
-        ref={textContainerRef}
-      >
-        <div
-          className="greek-text text-lg space-y-4 break-words overflow-x-auto"
-          style={{ lineHeight: lineSpacing }}
-        >
-          {sections[0]?.words.map((word, index) => (
-            <React.Fragment key={word.id}>
-              {index > 0 && word.text.startsWith("[") && (
-                <div className="h-4" />
-              )}
-              <WordContextMenu
-                word={word}
-                onLabelChange={handleLabelChange}
-                onStartLine={handleStartLine}
-                onEndLine={handleEndLine}
-                onDeleteLine={handleDeleteLine}
-                isDrawingLine={!!drawingLine}
-                hasConnectedLines={hasConnectedLines(word)}
-              >
-                <span
-                  className={`cursor-pointer hover:bg-gray-200 rounded inline-block ${
-                    word.parsing ? getParsingClass(word.parsing) : ""
-                  }`}
-                  onClick={(e) => handleWordClick(word, e)}
-                >
-                  {word.text}
-                </span>
-              </WordContextMenu>{" "}
-            </React.Fragment>
-          )) || "No text submitted yet."}
-        </div>
-        {lines.map((line) => (
-          <ConnectingLine
-            key={line.id}
-            startX={line.startX}
-            startY={line.startY}
-            endX={line.endX}
-            endY={line.endY}
-            annotation={line.annotation}
-            onAnnotationChange={(annotation) =>
-              handleAnnotationChange(line.id, annotation)
-            }
+      {!(analysisId > 0) && (
+        <div className="mb-4">
+          <Textarea
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Paste your Greek text here..."
+            className="w-full min-h-[100px] greek-text"
           />
-        ))}
-      </div>
+          <Button onClick={handleTextSubmit} className="mt-2">
+            Submit Text
+          </Button>
+        </div>
+      )}
+
+      {analysisId > 0 && (
+        <div
+          className="border p-4 pt-8 rounded-lg relative"
+          ref={textContainerRef}
+        >
+          <div
+            className="greek-text text-lg space-y-4 break-words overflow-x-auto"
+            style={{ lineHeight: lineSpacing }}
+          >
+            {sections[0]?.words.map((word, index) => (
+              <React.Fragment key={word.id}>
+                {index > 0 && word.text.startsWith("[") && (
+                  <div className="h-4" />
+                )}
+                <WordContextMenu
+                  word={word}
+                  onLabelChange={handleLabelChange}
+                  onStartLine={handleStartLine}
+                  onEndLine={handleEndLine}
+                  onDeleteLine={handleDeleteLine}
+                  isDrawingLine={!!drawingLine}
+                  hasConnectedLines={hasConnectedLines(word)}
+                >
+                  <span
+                    className={`cursor-pointer hover:bg-gray-200 rounded inline-block ${
+                      word.parsing ? getParsingClass(word.parsing) : ""
+                    }`}
+                    onClick={(e) => handleWordClick(word, e)}
+                  >
+                    {word.text}
+                  </span>
+                </WordContextMenu>{" "}
+              </React.Fragment>
+            )) || "No text submitted yet."}
+          </div>
+          {lines.map((line) => (
+            <ConnectingLine
+              key={line.id}
+              startX={line.startX}
+              startY={line.startY}
+              endX={line.endX}
+              endY={line.endY}
+              annotation={line.annotation}
+              onAnnotationChange={(annotation) =>
+                handleAnnotationChange(line.id, annotation)
+              }
+            />
+          ))}
+        </div>
+      )}
+
       {selectedWord && (
         <div
           style={{
