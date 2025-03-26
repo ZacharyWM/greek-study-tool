@@ -4,6 +4,7 @@ import { Label } from "../components/ui/label";
 import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
 import { useAuth0 } from "@auth0/auth0-react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
+import { useNavigate } from "react-router-dom";
 
 interface Analysis {
   id: number;
@@ -18,6 +19,7 @@ export default function History() {
   const [history, setHistory] = useState<Analysis[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string>("All");
+  const navigate = useNavigate();
 
   const fetchHistory = async () => {
     if (!isAuthenticated) return;
@@ -49,6 +51,10 @@ export default function History() {
     }
   }, [isAuthenticated]);
 
+  const handleAnalysisClick = (id: number) => {
+    navigate(`/analysis/${id}`);
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
@@ -73,6 +79,7 @@ export default function History() {
                 <div
                   key={item.id}
                   className="border p-4 rounded-lg hover:bg-muted cursor-pointer"
+                  onClick={() => handleAnalysisClick(item.id)}
                 >
                   <div className="text-sm text-muted-foreground">
                     {new Date(item.updated_at).toLocaleString()}
