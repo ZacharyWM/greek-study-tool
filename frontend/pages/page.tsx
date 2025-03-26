@@ -14,6 +14,7 @@ import { Label } from "../components/ui/label";
 import type { Section, Word, WordParsing } from "../types/models";
 import debounce from "lodash/debounce";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useParams } from "react-router-dom";
 
 interface Line {
   id: number;
@@ -27,6 +28,7 @@ interface Line {
 }
 
 export default function Home() {
+  const { id } = useParams();
   const [sections, setSections] = useState<Section[]>([]);
   const [inputText, setInputText] = useState("");
   const [description, setDescription] = useState("");
@@ -42,7 +44,7 @@ export default function Home() {
     startY: number;
   } | null>(null);
   const [lineSpacing, setLineSpacing] = useState(1.6);
-  const [analysisId, setAnalysisId] = useState<number>(1); // TODO - probably change to null or 0 later
+  const [analysisId, setAnalysisId] = useState<number>(parseInt(id || "0"));
   const containerRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
@@ -54,6 +56,11 @@ export default function Home() {
     logout,
     getAccessTokenSilently,
   } = useAuth0();
+
+  useEffect(() => {
+    const route = analysisId > 0 ? `/analysis/${analysisId}` : "/analysis";
+    window.history.replaceState({}, "", route);
+  }, [analysisId]);
 
   const fetchAnalysis = async (id: number) => {
     if (!isAuthenticated) return;
@@ -81,6 +88,9 @@ export default function Home() {
         }
         console.log("Analysis loaded successfully");
       } else {
+        window.alert("Analysis not found");
+        setAnalysisId(0);
+        window.history.replaceState({}, "", "/analysis");
         console.error("Failed to fetch analysis:", await response.text());
       }
     } catch (error) {
@@ -88,10 +98,9 @@ export default function Home() {
     }
   };
 
-  // Add useEffect to load analysis when authenticated
   useEffect(() => {
     console.log("Authenticated:", isAuthenticated, "Analysis ID:", analysisId);
-    if (isAuthenticated && analysisId) {
+    if (isAuthenticated) {
       fetchAnalysis(analysisId);
     }
   }, [isAuthenticated]);
@@ -125,7 +134,6 @@ export default function Home() {
     };
   }, []);
 
-  // Function to save analysis data to the backend
   const saveAnalysis = async () => {
     if (!isAuthenticated) return;
 
@@ -133,7 +141,6 @@ export default function Home() {
     try {
       const token = await getAccessTokenSilently();
 
-      // Combine all data into a single details object
       const analysisData = {
         sections,
         lines,
@@ -159,7 +166,6 @@ export default function Home() {
 
       if (response.ok) {
         const data = await response.json();
-        // If this was a new analysis, save the ID for future updates
         if (!analysisId && data.id) {
           setAnalysisId(data.id);
         }
@@ -172,7 +178,7 @@ export default function Home() {
     }
   };
 
-  // Create a debounced version of saveAnalysis
+  // TODO - use less dependencies and pass in values to save
   const debouncedSave = useCallback(
     debounce(() => {
       console.log("Debounced save");
@@ -181,7 +187,6 @@ export default function Home() {
     [sections, lines, lineSpacing, analysisId, title, isAuthenticated]
   );
 
-  // Trigger save whenever data changes
   useEffect(() => {
     if (sections.length > 0) {
       debouncedSave();
@@ -343,6 +348,12 @@ export default function Home() {
   const handleLineSpacingChange = (value: number[]) => {
     setLineSpacing(value[0]);
   };
+
+  // Update analysisId when URL param changes
+  useEffect(() => {
+    const newId = parseInt(id || "0");
+    setAnalysisId(newId);
+  }, [id]);
 
   return (
     <div className="container mx-auto p-4 max-w-4xl" ref={containerRef}>

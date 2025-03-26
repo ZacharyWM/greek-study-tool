@@ -83,28 +83,13 @@ func GetAnalysisById(id int, userId int) (Analysis, error) {
 	var analysis Analysis
 	var detailsJSON []byte
 
-	// err := database.DB.QueryRow(
-	// 	`SELECT id, user_id, details, created_at, updated_at
-	// 	FROM analyses
-	// 	WHERE id = $1 AND user_id = $2`,
-	// 	id, userId,
-	// ).
-	// 	Scan(
-	// 		&analysis.ID,
-	// 		&analysis.UserID,
-	// 		&detailsJSON,
-	// 		&analysis.CreatedTime,
-	// 		&analysis.UpdatedTime)
-
-	// TODO - this is temporary until the front end can save multiple analyses
-	err := database.DB.QueryRow(`
-	SELECT id, user_id, details, created_at, updated_at, title, description
-	FROM analyses 
-	WHERE user_id = $1
-	limit 1
-	`, userId).
-		Scan(
-			&analysis.ID,
+	err := database.DB.QueryRow(
+		`SELECT id, user_id, details, created_at, updated_at, title, description
+		FROM analyses
+		WHERE id = $1 AND user_id = $2`,
+		id, userId,
+	).
+		Scan(&analysis.ID,
 			&analysis.UserID,
 			&detailsJSON,
 			&analysis.CreatedAt,
@@ -134,8 +119,10 @@ func GetAnalysesForUser(userId int) ([]Analysis, error) {
 
 	// Include created_at and last_modified timestamps
 	rows, err := database.DB.Query(
-		`SELECT id, user_id, created_at, updated_at, title, description
-		FROM analyses WHERE user_id = $1`,
+		`select id, user_id, created_at, updated_at, title, description
+		from analyses 
+		where user_id = $1
+		order by updated_at desc`,
 		userId,
 	)
 	if err != nil {
@@ -165,4 +152,41 @@ func GetAnalysesForUser(userId int) ([]Analysis, error) {
 	}
 
 	return analyses, nil
+}
+
+func GetLastUpdatedAnalysis(userId int) (Analysis, error) {
+	var analysis Analysis
+	var detailsJSON []byte
+
+	err := database.DB.QueryRow(
+		`select id, user_id, details, created_at, updated_at, title, description
+		from analyses
+		where user_id = $1
+		order by updated_at desc
+		limit 1`,
+		userId,
+	).Scan(
+		&analysis.ID,
+		&analysis.UserID,
+		&detailsJSON,
+		&analysis.CreatedAt,
+		&analysis.UpdatedAt,
+		&analysis.Title,
+		&analysis.Description)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return analysis, errors.New("no analyses found for this user")
+		}
+		slog.Error("failed to get most recent analysis", "error", err)
+		return analysis, err
+	}
+
+	analysis.Details = make(map[string]interface{})
+	if err := json.Unmarshal(detailsJSON, &analysis.Details); err != nil {
+		slog.Error("failed to unmarshal details", "error", err)
+		return analysis, err
+	}
+
+	return analysis, nil
 }

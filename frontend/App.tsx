@@ -9,6 +9,7 @@ import {
   Route,
   Routes,
   useNavigate,
+  Navigate,
 } from "react-router-dom";
 
 import { getConfig } from "./config";
@@ -49,7 +50,9 @@ const App = () => {
           <div>
             <NavigationBar />
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Navigate to="/analysis" replace />} />
+              <Route path="/analysis" element={<Home />} />
+              <Route path="/analysis/:id" element={<Home />} />
               <Route path="/history" element={<History />} />
             </Routes>
           </div>

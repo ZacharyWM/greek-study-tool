@@ -108,6 +108,18 @@ func getAnalysisHandler(c *gin.Context) {
 		return
 	}
 
+	// TODO - Could have query param to determine if we want latest or new.
+	if analysisID == 0 {
+		analysis, err := service.GetLastUpdatedAnalysis(userID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, analysis)
+		return
+	}
+
 	analysis, err := service.GetAnalysisById(analysisID, userID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
