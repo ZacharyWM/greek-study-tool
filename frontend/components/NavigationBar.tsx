@@ -79,7 +79,6 @@ export const NavigationBar: React.FC = () => {
               style={{ width: "10rem" }}
             >
               <a
-                // TODO - maybe make a route like /analysis/{id} and use root as the default route
                 href="/"
                 className="block px-4 py-2 hover:bg-gray-200"
                 style={{ color: "black" }}
