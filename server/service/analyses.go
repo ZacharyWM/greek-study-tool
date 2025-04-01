@@ -190,3 +190,28 @@ func GetLastUpdatedAnalysis(userId int) (Analysis, error) {
 
 	return analysis, nil
 }
+
+func DeleteAnalysis(id int, userId int) error {
+	result, err := database.DB.Exec(
+		`DELETE FROM analyses 
+		WHERE id = $1 AND user_id = $2`,
+		id, userId,
+	)
+
+	if err != nil {
+		slog.Error("Failed to delete analysis", "error", err)
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		slog.Error("Failed to get rows affected", "error", err)
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("no analysis found with the given id for this user")
+	}
+
+	return nil
+}

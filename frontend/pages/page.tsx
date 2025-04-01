@@ -15,6 +15,7 @@ import type { Section, Word, WordParsing } from "../types/models";
 import debounce from "lodash/debounce";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useParams } from "react-router-dom";
+import { Trash2 } from "lucide-react"; // Import trash icon
 
 interface Line {
   id: number;
@@ -402,6 +403,41 @@ export default function Home() {
     }
   };
 
+  const deleteAnalysis = async () => {
+    if (!isAuthenticated) return;
+    if (window.confirm("Are you sure you want to delete this analysis?")) {
+      try {
+        const token = await getAccessTokenSilently();
+
+        const requestOptions = {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await fetch(
+          `/api/analyses/${analysisId}`,
+          requestOptions
+        );
+        if (response.ok) {
+          setAnalysisId(0);
+          setSections([]);
+          setLines([]);
+          setInputText("");
+          setTitle("");
+          setDescription("");
+          window.history.replaceState({}, "", "/analysis");
+          console.log("Analysis deleted successfully");
+        } else {
+          console.error("Failed to delete analysis:", await response.text());
+        }
+      } catch (error) {
+        console.error("Error deleting analysis:", error);
+      }
+    }
+  };
+
   // Update analysisId when URL param changes
   useEffect(() => {
     const newId = parseInt(id || "0");
@@ -420,6 +456,15 @@ export default function Home() {
             onChange={(e) => setTitle(e.target.value)}
             className="flex-1"
           />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="ml-2 pl-2"
+            onClick={deleteAnalysis}
+            title="Delete analysis"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
 
         <Label htmlFor="line-spacing" className="block mb-2 mt-4 pt-4">

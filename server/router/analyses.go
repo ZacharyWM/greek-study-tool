@@ -151,3 +151,32 @@ func getUserAnalysesHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, analyses)
 }
+
+func deleteAnalysisHandler(c *gin.Context) {
+	claims := auth.ClaimsFromContext(c)
+	if claims == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	idpID := claims.RegisteredClaims.Subject
+	userID, err := getUserIDFromIdpID(c, idpID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user ID"})
+		return
+	}
+
+	analysisID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid analysis ID"})
+		return
+	}
+
+	err = service.DeleteAnalysis(analysisID, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true})
+}

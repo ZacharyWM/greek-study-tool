@@ -43,6 +43,7 @@ func New(appDir string) *gin.Engine {
 	secureRouter.PATCH("/analyses/:id", updateAnalysisHandler)
 	secureRouter.GET("/analyses/:id", getAnalysisHandler)
 	secureRouter.GET("/analyses", getUserAnalysesHandler)
+	secureRouter.DELETE("/analyses/:id", deleteAnalysisHandler)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.File(path.Join(appDir, "frontend/index.html"))
