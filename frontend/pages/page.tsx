@@ -134,7 +134,14 @@ export default function Home() {
     };
   }, []);
 
-  const saveAnalysis = async () => {
+  const saveAnalysis = async (
+    saveTitle: string,
+    saveDescription: string,
+    saveSections: Section[],
+    saveLines: Line[],
+    saveLineSpacing: number,
+    saveAnalysisId: number
+  ) => {
     if (!isAuthenticated) return;
 
     console.log("Saving analysis...");
@@ -142,31 +149,33 @@ export default function Home() {
       const token = await getAccessTokenSilently();
 
       const analysisData = {
-        sections,
-        lines,
-        lineSpacing,
+        sections: saveSections,
+        lines: saveLines,
+        lineSpacing: saveLineSpacing,
       };
 
       const requestOptions = {
-        method: analysisId ? "PATCH" : "POST",
+        method: saveAnalysisId ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          title: title,
-          description: description,
+          title: saveTitle,
+          description: saveDescription,
           details: analysisData,
         }),
       };
 
-      const url = analysisId ? `/api/analyses/${analysisId}` : "/api/analyses";
+      const url = saveAnalysisId
+        ? `/api/analyses/${saveAnalysisId}`
+        : "/api/analyses";
 
       const response = await fetch(url, requestOptions);
 
       if (response.ok) {
         const data = await response.json();
-        if (!analysisId && data.id) {
+        if (!saveAnalysisId && data.id) {
           setAnalysisId(data.id);
         }
         console.log("Analysis saved successfully");
@@ -178,20 +187,51 @@ export default function Home() {
     }
   };
 
-  // TODO - use less dependencies and pass in values to save
   const debouncedSave = useCallback(
-    debounce(() => {
-      console.log("Debounced save");
-      saveAnalysis();
-    }, 1000),
-    [sections, lines, lineSpacing, analysisId, title, isAuthenticated]
+    debounce(
+      (
+        saveTitle: string,
+        saveDescription: string,
+        saveSections: Section[],
+        saveLines: Line[],
+        saveLineSpacing: number,
+        saveAnalysisId: number
+      ) => {
+        console.log("Debounced save");
+        saveAnalysis(
+          saveTitle,
+          saveDescription,
+          saveSections,
+          saveLines,
+          saveLineSpacing,
+          saveAnalysisId
+        );
+      },
+      1000
+    ),
+    [isAuthenticated]
   );
 
   useEffect(() => {
     if (sections.length > 0) {
-      debouncedSave();
+      debouncedSave(
+        title,
+        description,
+        sections,
+        lines,
+        lineSpacing,
+        analysisId
+      );
     }
-  }, [sections, lines, lineSpacing, debouncedSave, title]);
+  }, [
+    sections,
+    lines,
+    lineSpacing,
+    debouncedSave,
+    title,
+    description,
+    analysisId,
+  ]);
 
   const handleTextSubmit = () => {
     if (inputText.trim()) {
