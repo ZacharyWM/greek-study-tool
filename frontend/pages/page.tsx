@@ -389,6 +389,19 @@ export default function Home() {
     setLineSpacing(value[0]);
   };
 
+  const clearAllData = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to clear this analysis? This action cannot be undone."
+      )
+    ) {
+      setSections([]);
+      setLines([]);
+      setInputText("");
+      debouncedSave(title, description, [], [], lineSpacing, analysisId);
+    }
+  };
+
   // Update analysisId when URL param changes
   useEffect(() => {
     const newId = parseInt(id || "0");
@@ -412,17 +425,22 @@ export default function Home() {
         <Label htmlFor="line-spacing" className="block mb-2 mt-4 pt-4">
           Line Spacing
         </Label>
-        <Slider
-          id="line-spacing"
-          min={1}
-          max={3}
-          step={0.1}
-          value={[lineSpacing]}
-          onValueChange={handleLineSpacingChange}
-          className="w-full max-w-xs"
-        />
+        <div className="flex items-center justify-between gap-4">
+          <Slider
+            id="line-spacing"
+            min={1}
+            max={3}
+            step={0.1}
+            value={[lineSpacing]}
+            onValueChange={handleLineSpacingChange}
+            className="w-full max-w-xs"
+          />
+          <Button onClick={clearAllData} variant="secondary">
+            Clear
+          </Button>
+        </div>
       </div>
-      {!(analysisId > 0) && (
+      {sections.length == 0 && (
         <div className="mb-4">
           <Textarea
             value={inputText}
@@ -436,7 +454,7 @@ export default function Home() {
         </div>
       )}
 
-      {analysisId > 0 && (
+      {sections.length > 0 && (
         <div
           className="border p-4 pt-8 rounded-lg relative"
           ref={textContainerRef}
