@@ -420,7 +420,7 @@ export default function Home() {
           requestOptions
         );
         if (response.ok) {
-          navigate("/analyses");
+          navigate("/analyses?deleted=true");
         } else {
           console.error("Failed to delete analysis:", await response.text());
         }

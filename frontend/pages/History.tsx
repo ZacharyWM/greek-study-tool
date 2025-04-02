@@ -4,7 +4,9 @@ import { Label } from "../components/ui/label";
 import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
 import { useAuth0 } from "@auth0/auth0-react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Toaster } from "../components/ui/toaster";
+import { useToast } from "../hooks/use-toast";
 
 interface Analysis {
   id: number;
@@ -20,11 +22,14 @@ export default function History() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string>("All");
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
 
   const fetchHistory = async () => {
     if (!isAuthenticated) return;
 
     try {
+      setLoadingHistory(true);
       const token = await getAccessTokenSilently();
       const response = await fetch(`/api/analyses`, {
         headers: {
@@ -41,6 +46,8 @@ export default function History() {
       }
     } catch (error) {
       console.error("Error fetching history:", error);
+    } finally {
+      setLoadingHistory(false);
     }
   };
 
@@ -48,8 +55,25 @@ export default function History() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchHistory();
+
+      console.log("History component mounted");
+      const searchParams = new URLSearchParams(location.search);
+      if (searchParams.get("deleted") === "true") {
+        window.history.replaceState({}, document.title, location.pathname);
+        const { dismiss } = toast({
+          variant: "success",
+          title: "Analysis Deleted",
+          description: "Your analysis was successfully deleted.",
+          style: {
+            backgroundColor: "#4caf50",
+            color: "#fff",
+          },
+        });
+
+        setTimeout(dismiss, 4000);
+      }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, location]);
 
   const handleAnalysisClick = (id: number) => {
     navigate(`/analysis/${id}`);
@@ -97,6 +121,7 @@ export default function History() {
           )}
         </div>
       </ScrollArea>
+      <Toaster />
     </div>
   );
 }
