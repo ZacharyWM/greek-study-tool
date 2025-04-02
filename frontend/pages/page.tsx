@@ -14,7 +14,7 @@ import { Label } from "../components/ui/label";
 import type { Section, Word, WordParsing } from "../types/models";
 import debounce from "lodash/debounce";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react"; // Import trash icon
 
 interface Line {
@@ -30,6 +30,7 @@ interface Line {
 
 export default function Home() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [sections, setSections] = useState<Section[]>([]);
   const [inputText, setInputText] = useState("");
   const [description, setDescription] = useState("");
@@ -87,7 +88,6 @@ export default function Home() {
           if (data.title) setTitle(data.title);
           if (data.description) setDescription(data.description);
         }
-        console.log("Analysis loaded successfully");
       } else {
         window.alert("Analysis not found");
         setAnalysisId(0);
@@ -104,7 +104,6 @@ export default function Home() {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("new") === "true") {
         window.history.replaceState({}, "", "/analysis");
-        console.log("Creating new analysis from query parameter");
       } else if (analysisId) {
         fetchAnalysis(analysisId);
       }
@@ -117,12 +116,6 @@ export default function Home() {
         returnTo: window.location.origin,
       },
     });
-
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     loginWithRedirect();
-  //   }
-  // }, [isAuthenticated, loginWithRedirect]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -150,7 +143,6 @@ export default function Home() {
   ) => {
     if (!isAuthenticated) return;
 
-    console.log("Saving analysis...");
     try {
       const token = await getAccessTokenSilently();
 
@@ -184,7 +176,6 @@ export default function Home() {
         if (!saveAnalysisId && data.id) {
           setAnalysisId(data.id);
         }
-        console.log("Analysis saved successfully");
       } else {
         console.error("Failed to save analysis:", await response.text());
       }
@@ -203,7 +194,6 @@ export default function Home() {
         saveLineSpacing: number,
         saveAnalysisId: number
       ) => {
-        console.log("Debounced save");
         saveAnalysis(
           saveTitle,
           saveDescription,
@@ -430,14 +420,7 @@ export default function Home() {
           requestOptions
         );
         if (response.ok) {
-          setAnalysisId(0);
-          setSections([]);
-          setLines([]);
-          setInputText("");
-          setTitle("");
-          setDescription("");
-          window.history.replaceState({}, "", "/analysis");
-          console.log("Analysis deleted successfully");
+          navigate("/analyses");
         } else {
           console.error("Failed to delete analysis:", await response.text());
         }
