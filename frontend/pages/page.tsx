@@ -100,9 +100,14 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log("Authenticated:", isAuthenticated, "Analysis ID:", analysisId);
     if (isAuthenticated) {
-      fetchAnalysis(analysisId);
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("new") === "true") {
+        window.history.replaceState({}, "", "/analysis");
+        console.log("Creating new analysis from query parameter");
+      } else if (analysisId) {
+        fetchAnalysis(analysisId);
+      }
     }
   }, [isAuthenticated]);
 
@@ -405,7 +410,11 @@ export default function Home() {
 
   const deleteAnalysis = async () => {
     if (!isAuthenticated) return;
-    if (window.confirm("Are you sure you want to delete this analysis?")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this analysis? This action cannot be undone."
+      )
+    ) {
       try {
         const token = await getAccessTokenSilently();
 

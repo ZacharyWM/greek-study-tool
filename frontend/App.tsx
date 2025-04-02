@@ -53,7 +53,7 @@ const App = () => {
               <Route path="/" element={<Navigate to="/analysis" replace />} />
               <Route path="/analysis" element={<Home />} />
               <Route path="/analysis/:id" element={<Home />} />
-              <Route path="/history" element={<History />} />
+              <Route path="/analyses" element={<History />} />
             </Routes>
           </div>
         </Auth0ProviderWithNavigate>
