@@ -83,7 +83,7 @@ export const NavigationBar: React.FC = () => {
                 className="block px-4 py-2 hover:bg-gray-200"
                 style={{ color: "black" }}
               >
-                New Analysis
+                Create New
               </a>
               <a
                 href="/analyses"

@@ -59,11 +59,6 @@ export default function Home() {
     getAccessTokenSilently,
   } = useAuth0();
 
-  useEffect(() => {
-    const route = analysisId > 0 ? `/analysis/${analysisId}` : "/analysis";
-    window.history.replaceState({}, "", route);
-  }, [analysisId]);
-
   const fetchAnalysis = async (id: number) => {
     if (!isAuthenticated) return;
 
@@ -87,6 +82,9 @@ export default function Home() {
           }
           if (data.title) setTitle(data.title);
           if (data.description) setDescription(data.description);
+          if (!window.location.toString().includes(`/analysis/${data.id}`)) {
+            window.history.replaceState({}, "", `/analysis/${data.id}`);
+          }
         }
       } else {
         window.alert("Analysis not found");
@@ -104,11 +102,12 @@ export default function Home() {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("new") === "true") {
         window.history.replaceState({}, "", "/analysis");
-      } else if (analysisId) {
+      } else {
+        console.log("Fetching analysis with ID:", analysisId);
         fetchAnalysis(analysisId);
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, analysisId]);
 
   const logoutWithRedirect = () =>
     logout({

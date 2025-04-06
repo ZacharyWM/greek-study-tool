@@ -50,7 +50,7 @@ const App = () => {
           <div>
             <NavigationBar />
             <Routes>
-              <Route path="/" element={<Navigate to="/analysis" replace />} />
+              <Route path="/" element={<Home />} />
               <Route path="/analysis" element={<Home />} />
               <Route path="/analysis/:id" element={<Home />} />
               <Route path="/analyses" element={<History />} />
