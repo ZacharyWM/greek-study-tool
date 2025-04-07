@@ -133,7 +133,6 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
               "Conjunction",
               "Particle",
               "Article",
-              "Participle",
             ])}
 
             {parsing.partOfSpeech === "verb" && (
