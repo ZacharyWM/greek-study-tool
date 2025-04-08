@@ -79,19 +79,18 @@ export const NavigationBar: React.FC = () => {
               style={{ width: "10rem" }}
             >
               <a
-                // TODO - maybe make a route like /analysis/{id} and use root as the default route
-                href="/"
+                href="/analysis?new=true"
                 className="block px-4 py-2 hover:bg-gray-200"
                 style={{ color: "black" }}
               >
-                Current Analysis
+                Create New
               </a>
               <a
-                href="/history"
+                href="/analyses"
                 className="block px-4 py-2 hover:bg-gray-200"
                 style={{ color: "black" }}
               >
-                History
+                Your Analyses
               </a>
             </div>
           )}

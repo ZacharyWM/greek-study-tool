@@ -3,11 +3,13 @@ import ReactDOM from "react-dom/client";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
 import Home from "./pages/page";
+import History from "./pages/History";
 import {
   BrowserRouter as Router,
   Route,
   Routes,
   useNavigate,
+  Navigate,
 } from "react-router-dom";
 
 import { getConfig } from "./config";
@@ -49,7 +51,9 @@ const App = () => {
             <NavigationBar />
             <Routes>
               <Route path="/" element={<Home />} />
-              {/* Add more routes here as needed */}
+              <Route path="/analysis" element={<Home />} />
+              <Route path="/analysis/:id" element={<Home />} />
+              <Route path="/analyses" element={<History />} />
             </Routes>
           </div>
         </Auth0ProviderWithNavigate>
