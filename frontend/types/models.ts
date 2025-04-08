@@ -19,6 +19,7 @@ export interface WordParsing {
   case?: string;
   gender?: string;
   degree?: string;
+  type?: string;
 }
 
 export interface Section {

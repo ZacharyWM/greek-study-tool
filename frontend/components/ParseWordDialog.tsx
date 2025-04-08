@@ -41,6 +41,7 @@ const initialParsing: WordParsing = {
   case: "",
   gender: "",
   degree: "",
+  type: "",
 };
 
 const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
@@ -124,21 +125,75 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
               />
             </div>
             {renderSelect("Part of Speech", "partOfSpeech", [
+              "Article",
               "Noun",
-              "Verb",
+              "Pronoun",
               "Adjective",
               "Adverb",
-              "Pronoun",
+              "Verb",
               "Preposition",
               "Conjunction",
               "Particle",
-              "Article",
             ])}
+
+            {(parsing.partOfSpeech === "article" ||
+              parsing.partOfSpeech === "noun" ||
+              parsing.partOfSpeech === "adjective" ||
+              parsing.partOfSpeech === "pronoun") && (
+              <>
+                {renderSelect("Case", "case", [
+                  "Nominative",
+                  "Genitive",
+                  "Dative",
+                  "Accusative",
+                  "Vocative", // should pronoun have vocative too?
+                ])}
+                {renderSelect("Gender", "gender", [
+                  "Masculine",
+                  "Feminine",
+                  "Neuter",
+                ])}
+                {renderSelect("Number", "number", ["Singular", "Plural"])}
+              </>
+            )}
+            {parsing.partOfSpeech === "pronoun" && (
+              <>
+                {renderSelect("Person", "person", ["1st", "2nd", "3rd"])}
+                {renderSelect("Type", "type", [
+                  "Personal",
+                  "Demonstrative",
+                  "Relative",
+                  "Indefinite",
+                  "Interrogative",
+                  "Reflexive",
+                  "Reciprocal",
+                  "Possessive",
+                ])}
+              </>
+            )}
+
+            {(parsing.partOfSpeech === "adjective" ||
+              parsing.partOfSpeech === "adverb") && (
+              <>
+                {renderSelect("Degree", "degree", [
+                  "Positive",
+                  "Comparative",
+                  "Superlative",
+                ])}
+              </>
+            )}
 
             {parsing.partOfSpeech === "verb" && (
               <>
-                {renderSelect("Person", "person", ["1st", "2nd", "3rd"])}
-                {renderSelect("Number", "number", ["Singular", "Plural"])}
+                {renderSelect("Mood", "mood", [
+                  "Indicative",
+                  "Subjunctive",
+                  "Imperative",
+                  "Infinitive",
+                  "Participle",
+                  "Optative",
+                ])}
+
                 {renderSelect("Tense", "tense", [
                   "Present",
                   "Aorist",
@@ -152,74 +207,36 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
                   "Middle",
                   "Passive",
                 ])}
-                {renderSelect("Mood", "mood", [
+
+                {[
                   "Indicative",
                   "Subjunctive",
                   "Imperative",
-                  "Infinitive",
-                  "Participle",
                   "Optative",
-                ])}
-              </>
-            )}
+                ].includes(parsing.mood ?? "") && (
+                  <>
+                    {renderSelect("Person", "person", ["1st", "2nd", "3rd"])}
+                    {renderSelect("Number", "number", ["Singular", "Plural"])}
+                  </>
+                )}
 
-            {parsing.partOfSpeech === "participle" && (
-              <>
-                {renderSelect("Tense", "tense", [
-                  "Present",
-                  "Aorist",
-                  "Perfect",
-                  "Future",
-                ])}
-                {renderSelect("Voice", "voice", [
-                  "Active",
-                  "Middle",
-                  "Passive",
-                ])}
-                {renderSelect("Case", "case", [
-                  "Nominative",
-                  "Genitive",
-                  "Dative",
-                  "Accusative",
-                  "Vocative",
-                ])}
-                {renderSelect("Number", "number", ["Singular", "Plural"])}
-                {renderSelect("Gender", "gender", [
-                  "Masculine",
-                  "Feminine",
-                  "Neuter",
-                ])}
-              </>
-            )}
-
-            {(parsing.partOfSpeech === "noun" ||
-              parsing.partOfSpeech === "adjective" ||
-              parsing.partOfSpeech === "pronoun" ||
-              parsing.partOfSpeech === "article") && (
-              <>
-                {renderSelect("Case", "case", [
-                  "Nominative",
-                  "Genitive",
-                  "Dative",
-                  "Accusative",
-                  "Vocative",
-                ])}
-                {renderSelect("Number", "number", ["Singular", "Plural"])}
-                {renderSelect("Gender", "gender", [
-                  "Masculine",
-                  "Feminine",
-                  "Neuter",
-                ])}
-              </>
-            )}
-
-            {parsing.partOfSpeech === "adjective" && (
-              <>
-                {renderSelect("Degree", "degree", [
-                  "Positive",
-                  "Comparative",
-                  "Superlative",
-                ])}
+                {parsing.mood === "participle" && (
+                  <>
+                    {renderSelect("Number", "number", ["Singular", "Plural"])}
+                    {renderSelect("Gender", "gender", [
+                      "Masculine",
+                      "Feminine",
+                      "Neuter",
+                    ])}
+                    {renderSelect("Case", "case", [
+                      "Nominative",
+                      "Genitive",
+                      "Dative",
+                      "Accusative",
+                      "Vocative",
+                    ])}
+                  </>
+                )}
               </>
             )}
           </div>
