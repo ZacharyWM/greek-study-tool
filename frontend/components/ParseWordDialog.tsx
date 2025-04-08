@@ -209,10 +209,10 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
                 ])}
 
                 {[
-                  "Indicative",
-                  "Subjunctive",
-                  "Imperative",
-                  "Optative",
+                  "indicative",
+                  "subjunctive",
+                  "imperative",
+                  "optative",
                 ].includes(parsing.mood ?? "") && (
                   <>
                     {renderSelect("Person", "person", ["1st", "2nd", "3rd"])}
