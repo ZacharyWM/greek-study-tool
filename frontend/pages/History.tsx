@@ -71,7 +71,7 @@ export default function History() {
         setTimeout(dismiss, 4000);
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, location.pathname, location.search]);
 
   const handleAnalysisClick = (id: number) => {
     navigate(`/analysis/${id}`);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
@@ -45,8 +45,26 @@ const Auth0ProviderWithNavigate = ({ children }) => {
 // Main app component
 const App = () => {
   const [sidebar, setSidebar] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
 
   const showSidebar = () => setSidebar(!sidebar);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        sidebar &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setSidebar(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [sidebar]);
 
   return (
     <Theme>
@@ -54,7 +72,11 @@ const App = () => {
         <Auth0ProviderWithNavigate>
           <div>
             <NavigationBar sidebar={sidebar} setSidebar={setSidebar} />
-            <SideBarNav sidebar={sidebar} showSidebar={showSidebar} />
+            <SideBarNav
+              sidebar={sidebar}
+              showSidebar={showSidebar}
+              sidebarRef={sidebarRef}
+            />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/analysis" element={<Home />} />
