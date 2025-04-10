@@ -159,6 +159,8 @@ body {
   top: 0;
   left: -100%;
   transition: 850ms;
+  z-index: 1000; /* Adding high z-index to ensure sidebar appears on top */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); /* Optional: adding shadow for better visibility */
 }
 
 .nav-menu.active {
