@@ -4,6 +4,7 @@ import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
 import Home from "./pages/page";
 import History from "./pages/History";
+import SideBarNav from "./components/SideBarNav";
 import {
   BrowserRouter as Router,
   Route,
@@ -49,6 +50,7 @@ const App = () => {
         <Auth0ProviderWithNavigate>
           <div>
             <NavigationBar />
+            <SideBarNav />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/analysis" element={<Home />} />
