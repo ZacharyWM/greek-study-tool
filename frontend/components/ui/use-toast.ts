@@ -61,7 +61,6 @@ const addToRemoveQueue = (toastId: string) => {
   }
 
   const timeout = setTimeout(() => {
-    console.log("Removing toast 1", toastId);
     toastTimeouts.delete(toastId);
     dispatch({
       type: "REMOVE_TOAST",
@@ -90,7 +89,6 @@ export const reducer = (state: State, action: Action): State => {
 
     case "DISMISS_TOAST": {
       const { toastId } = action;
-      console.log("Dismissing toast", toastId);
 
       // ! Side effects ! - This could be extracted into a dismissToast() action,
       // but I'll keep it here for simplicity
@@ -115,7 +113,6 @@ export const reducer = (state: State, action: Action): State => {
       };
     }
     case "REMOVE_TOAST":
-      console.log("Removing toast 2", action.toastId);
       if (action.toastId === undefined) {
         return {
           ...state,

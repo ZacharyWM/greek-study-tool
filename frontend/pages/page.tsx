@@ -103,7 +103,6 @@ export default function Home() {
       if (urlParams.get("new") === "true") {
         window.history.replaceState({}, "", "/analysis");
       } else {
-        console.log("Fetching analysis with ID:", analysisId);
         fetchAnalysis(analysisId);
       }
     }

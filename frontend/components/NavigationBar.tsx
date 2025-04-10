@@ -34,12 +34,10 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   // }
 
   useEffect(() => {
-    console.log("isAuthenticated", isAuthenticated);
     if (isAuthenticated) {
       (async () => {
         const jwt = await getAccessTokenSilently();
         const userData = await fetchUserData(jwt);
-        console.log("userData", userData);
       })();
     }
   }, [isAuthenticated]);

@@ -40,7 +40,6 @@ export default function History() {
       if (response.ok) {
         const data = await response.json();
         setHistory(data);
-        console.log("Fetched history:", data);
       } else {
         console.error("Failed to fetch history:", await response.text());
       }
@@ -56,7 +55,6 @@ export default function History() {
     if (isAuthenticated) {
       fetchHistory();
 
-      console.log("History component mounted");
       const searchParams = new URLSearchParams(location.search);
       if (searchParams.get("deleted") === "true") {
         window.history.replaceState({}, document.title, location.pathname);
@@ -73,7 +71,7 @@ export default function History() {
         setTimeout(dismiss, 4000);
       }
     }
-  }, [isAuthenticated, location]);
+  }, [isAuthenticated]);
 
   const handleAnalysisClick = (id: number) => {
     navigate(`/analysis/${id}`);
