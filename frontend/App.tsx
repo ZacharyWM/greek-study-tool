@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
@@ -44,13 +44,17 @@ const Auth0ProviderWithNavigate = ({ children }) => {
 
 // Main app component
 const App = () => {
+  const [sidebar, setSidebar] = useState(false);
+
+  const showSidebar = () => setSidebar(!sidebar);
+
   return (
     <Theme>
       <Router>
         <Auth0ProviderWithNavigate>
           <div>
-            <NavigationBar />
-            <SideBarNav />
+            <NavigationBar sidebar={sidebar} setSidebar={setSidebar} />
+            <SideBarNav sidebar={sidebar} showSidebar={showSidebar} />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/analysis" element={<Home />} />

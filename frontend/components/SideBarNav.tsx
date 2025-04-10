@@ -1,23 +1,18 @@
-import React, { useState } from "react";
-import * as FaIcons from "react-icons/fa";
+import React from "react";
 import * as AiIcons from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { SidebarData } from "./SideBarNavItems";
 import { IconContext } from "react-icons";
 
-function SideBarNav() {
-  const [sidebar, setSidebar] = useState(true);
+interface SideBarNavProps {
+  sidebar: boolean;
+  showSidebar: () => void;
+}
 
-  const showSidebar = () => setSidebar(!sidebar);
-
+function SideBarNav({ sidebar, showSidebar }: SideBarNavProps) {
   return (
     <>
       <IconContext.Provider value={{ color: "undefined" }}>
-        <div className="navbar">
-          <Link to="#" className="menu-bars">
-            <FaIcons.FaBars onClick={showSidebar} />
-          </Link>
-        </div>
         <nav className={sidebar ? "nav-menu active" : "nav-menu"}>
           <ul className="nav-menu-items" onClick={showSidebar}>
             <li className="navbar-toggle">
