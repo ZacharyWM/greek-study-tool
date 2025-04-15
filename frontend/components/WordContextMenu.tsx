@@ -21,7 +21,11 @@ import type { Word } from "../types/models";
 
 interface WordContextMenuProps {
   word: Word;
-  onLabelChange: (wordId: number, newLabel: string | undefined, position?: { x: number, y: number }) => void;
+  onLabelChange: (
+    wordId: number,
+    newLabel: string | undefined,
+    position?: { x: number; y: number }
+  ) => void;
   onStartLine: (word: Word, x: number, y: number) => void;
   onEndLine: (word: Word, x: number, y: number) => void;
   onDeleteLine: (word: Word) => void;
@@ -100,7 +104,7 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
     }
   };
 
-  const handleLabelPositionChange = (newPosition: { x: number, y: number }) => {
+  const handleLabelPositionChange = (newPosition: { x: number; y: number }) => {
     onLabelChange(word.id, word.label, newPosition);
   };
 
@@ -138,9 +142,9 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
             className="relative inline-block"
             style={{ zIndex: 1 }} // Establish stacking context
           >
-            <div 
+            <div
               ref={wordRef}
-              className="relative" 
+              className="relative"
               style={{ lineHeight: "normal" }}
               onClick={handleWordClick}
             >
@@ -166,9 +170,9 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
               Delete Label
             </ContextMenuItem>
           )}
-          <ContextMenuItem onSelect={handleLineAction}>
+          {/* <ContextMenuItem onSelect={handleLineAction}>
             Create Word Link
-          </ContextMenuItem>
+          </ContextMenuItem> */}
           {hasConnectedLines && (
             <ContextMenuItem onSelect={() => onDeleteLine(word)}>
               Delete Word Link
