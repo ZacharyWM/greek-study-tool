@@ -156,32 +156,33 @@ body {
 }
 
 /* Participles */
-.participle {
+.mood-participle {
   color: #ff69b4; /* Pink */
 }
 
-.participle.case-nominative {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: #00008b; /* Dark Blue */
+/* Case-specific styling for participles when case is specified */
+.mood-participle.case-nominative {
+  text-decoration: wavy underline #00008b; /* Dark Blue */
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
 }
 
-.participle.case-genitive {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: #1e90ff; /* Light Blue */
+.mood-participle.case-genitive {
+  text-decoration: wavy underline #1e90ff; /* Light Blue */
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
 }
 
-.participle.case-dative {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: #ffa500; /* Orange */
+.mood-participle.case-dative {
+  text-decoration: wavy underline #ffa500; /* Orange */
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
 }
 
-.participle.case-accusative {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: #ff0000; /* Red */
+.mood-participle.case-accusative {
+  text-decoration: wavy underline #ff0000; /* Red */
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
 }
 
 /* Adverbs */
@@ -249,11 +250,58 @@ body {
 }
 
 /* 
- * Enhanced Translation Module Styles
- * This file contains all the CSS needed for the translation module functionality
+ * NEW ALIGNMENT FIXES FOR TRANSLATION MODE
  */
 
-/* Main layout container */
+/* Header alignment fixes */
+.bg-blue-700.text-white.p-2,
+.bg-blue-700.text-white.p-2.flex {
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.bg-blue-700 .font-bold,
+.bg-blue-700 span.font-bold {
+  padding-left: 0.5rem;
+  line-height: 1.2;
+}
+
+/* Content alignment fixes */
+[id^="greek-verse-"],
+.p-4.bg-white.relative,
+.p-4.bg-white.border-l {
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Ensure rows have consistent heights */
+.flex.border-b {
+  min-height: 80px;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Ensure translation textareas align properly */
+.p-4.bg-white.border-l textarea {
+  margin-top: 0.5rem;
+  min-height: 60px;
+  height: calc(100% - 0.5rem);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Verse number styling */
+sup.text-blue-700.font-semibold.mr-1 {
+  display: inline-block;
+  font-size: 0.75rem;
+  vertical-align: super;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+/* Enhanced Translation Module Styles */
 .translation-container {
   display: grid;
   grid-template-columns: 1fr;
@@ -281,7 +329,7 @@ body {
   height: auto;
 }
 
-/* Headers */
+/* Column headers */
 .column-header {
   background-color: #1d4ed8;
   color: white;
@@ -293,193 +341,78 @@ body {
   align-items: center;
 }
 
-/* Verse containers */
-.verse-container {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+/* These styles should be merged into your main style.css */
+
+/* Sidebar-specific styles */
+.sidebar-transition {
+  transition: width 0.3s ease;
 }
 
-/* Individual verse boxes */
-.greek-verse,
-.translation-verse {
-  padding: 1rem;
-  background-color: white;
-  border-bottom: 1px solid #e5e7eb;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+.sidebar-shrink {
+  width: 4rem;
 }
 
-/* Greek text styling */
-.greek-text {
-  font-size: 1.125rem;
-  line-height: 2.5;
-  letter-spacing: 0.01em;
-  word-spacing: 0.7em;
-  overflow-wrap: break-word;
-  padding: 0.5rem;
-  font-weight: 400;
+.sidebar-expand {
+  width: 18rem;
 }
 
-/* Translation textarea styling */
-.translation-input {
-  width: 100%;
-  resize: none;
-  border: none;
-  background: transparent;
-  padding: 0;
-  font-family: 'Times New Roman', serif;
-  outline: none;
-  box-sizing: border-box;
-  min-height: 50px;
+/* Book section styles */
+.book-section {
+  overflow: hidden;
+  transition: max-height 0.3s ease;
 }
 
-.translation-input:focus {
-  outline: none;
-  box-shadow: none;
+.book-section.collapsed {
+  max-height: 2.5rem;
 }
 
-/* Verse number styling */
-.verse-number {
-  font-size: 0.75rem;
-  vertical-align: super;
-  font-weight: 600;
-  color: #1d4ed8;
-  margin-right: 0.25rem;
-  line-height: 0;
+.book-section.expanded {
+  max-height: 500px; /* Adjust as needed */
 }
 
-/* Action buttons */
-.action-button {
-  height: 1.5rem;
-  width: 1.5rem;
-  padding: 0;
-  background-color: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Improved scrollbar for sidebar */
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
 }
 
-.action-button svg {
-  height: 0.75rem;
-  width: 0.75rem;
-  color: black;
+.sidebar-content::-webkit-scrollbar-track {
+  background: var(--sidebar-background);
 }
 
-.save-button {
-  height: 1.5rem;
-  padding: 0 0.5rem;
-  background-color: white;
-  color: black;
-  font-size: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sidebar-content::-webkit-scrollbar-thumb {
+  background-color: var(--sidebar-border);
+  border-radius: 3px;
 }
 
-/* Copied alert */
-.copied-alert {
-  margin: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sidebar-accent-foreground);
 }
 
-/* Word styling with parsing */
-.parsed-word {
-  border-radius: 0.25rem;
-  padding: 0 0.25rem;
-  margin-right: 0.5rem;
-  display: inline-block;
+/* Animation for loading indicator */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
-/* Case stylings */
-.case-nominative {
-  color: #2563eb;
+.loading-pulse {
+  animation: pulse 1.5s infinite;
 }
 
-.case-genitive {
-  color: #1e3a8a;
+/* Analysis item hover effect */
+.analysis-item {
+  transition: background-color 0.2s, transform 0.1s;
 }
 
-.case-dative {
-  color: #f97316;
+.analysis-item:hover {
+  background-color: var(--sidebar-accent);
+  transform: translateX(2px);
 }
 
-.case-accusative {
-  color: #dc2626;
-}
-
-/* Mood stylings */
-.mood-indicative {
-  color: #16a34a;
-}
-
-.mood-subjunctive {
-  color: #db2777;
-}
-
-.mood-infinitive {
-  color: #ca8a04;
-}
-
-.mood-imperative {
-  font-weight: bold;
-  text-decoration: underline;
-}
-
-.mood-participle {
-  color: #9333ea;
-}
-
-/* Part of speech stylings */
-.adjective {
-  font-style: italic;
-}
-
-.adverb {
-  text-decoration: underline;
-}
-
-.preposition {
-  font-variant: small-caps;
-}
-
-/* Hover effects */
-.word-hover:hover {
-  background-color: #e5e7eb;
-  cursor: pointer;
-}
-
-/* Line spacing control */
-.line-spacing-control {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.line-spacing-slider {
-  width: 8rem;
-}
-
-/* Toggle styles */
-.translation-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Unsaved changes indicator */
-.unsaved-indicator {
-  font-size: 0.75rem;
-  color: #f59e0b;
-  font-style: italic;
-  margin-right: 0.5rem;
+.analysis-item.active {
+  background-color: var(--sidebar-primary);
+  color: var(--sidebar-primary-foreground);
 }

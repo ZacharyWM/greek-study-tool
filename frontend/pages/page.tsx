@@ -7,9 +7,7 @@ import { Textarea } from "../components/ui/textarea";
 import ParseWordDialog from "../components/ParseWordDialog";
 import WordContextMenu from "../components/WordContextMenu";
 import ParsedWordSummary from "../components/ParsedWordSummary";
-import ConnectingLine from "../components/ConnectingLine";
 import { getParsingClass } from "../lib/parsing-styles";
-import { Slider } from "../components/ui/slider";
 import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { Save, Copy, Download } from "lucide-react";
@@ -65,7 +63,8 @@ export default function Home() {
     startX: number;
     startY: number;
   } | null>(null);
-  const [lineSpacing, setLineSpacing] = useState(1.6);
+  // Fixed line spacing - no longer adjustable
+  const lineSpacing = 3.0;
   const [analysisId, setAnalysisId] = useState<number>(parseInt(id || "0"));
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
@@ -159,9 +158,6 @@ export default function Home() {
             }
           }
           if (data.details.lines) setLines(data.details.lines);
-          if (data.details.lineSpacing) {
-            setLineSpacing(data.details.lineSpacing);
-          }
           // Set the translation visibility if it exists in saved data
           if (data.details.showTranslation !== undefined) {
             setShowTranslation(data.details.showTranslation);
@@ -234,7 +230,6 @@ export default function Home() {
     saveDescription: string,
     saveSections: Section[],
     saveLines: Line[],
-    saveLineSpacing: number,
     saveAnalysisId: number,
     saveShowTranslation: boolean,
     saveSplitPosition: number
@@ -247,7 +242,6 @@ export default function Home() {
       const analysisData = {
         sections: saveSections,
         lines: saveLines,
-        lineSpacing: saveLineSpacing,
         showTranslation: saveShowTranslation,
         splitPosition: saveSplitPosition
       };
@@ -292,7 +286,6 @@ export default function Home() {
         saveDescription: string,
         saveSections: Section[],
         saveLines: Line[],
-        saveLineSpacing: number,
         saveAnalysisId: number,
         saveShowTranslation: boolean,
         saveSplitPosition: number
@@ -302,7 +295,6 @@ export default function Home() {
           saveDescription,
           saveSections,
           saveLines,
-          saveLineSpacing,
           saveAnalysisId,
           saveShowTranslation,
           saveSplitPosition
@@ -362,7 +354,6 @@ export default function Home() {
         description,
         sections,
         lines,
-        lineSpacing,
         analysisId,
         showTranslation,
         splitPosition
@@ -371,7 +362,6 @@ export default function Home() {
   }, [
     sections,
     lines,
-    lineSpacing,
     debouncedSave,
     title,
     description,
@@ -546,10 +536,6 @@ export default function Home() {
     );
   };
 
-  const handleLineSpacingChange = (value: number[]) => {
-    setLineSpacing(value[0]);
-  };
-
   const handleCopyToClipboard = () => {
     if (translation) {
       navigator.clipboard.writeText(translation);
@@ -580,7 +566,7 @@ export default function Home() {
       setLines([]);
       setInputText("");
       setTranslation("");
-      debouncedSave(title, description, [], [], lineSpacing, analysisId, showTranslation, splitPosition);
+      debouncedSave(title, description, [], [], analysisId, showTranslation, splitPosition);
     }
   };
 
@@ -708,22 +694,7 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4">
-          <div>
-            <Label htmlFor="line-spacing" className="block mb-2">
-              Line Spacing
-            </Label>
-            <Slider
-              id="line-spacing"
-              min={1}
-              max={3}
-              step={0.1}
-              value={[lineSpacing]}
-              onValueChange={handleLineSpacingChange}
-              className="w-32"
-            />
-          </div>
-          
-          {/* Add Translation Toggle */}
+          {/* Translation Toggle */}
           <div>
             <TranslationToggle 
               isEnabled={showTranslation} 
@@ -840,199 +811,207 @@ export default function Home() {
         </div>
       )}
 
-      {/* TRANSLATION MODE WITH SIDE-BY-SIDE LAYOUT */}
-      {sections.length > 0 && showTranslation && (
-        <div className="border rounded-lg" ref={splitContainerRef}>
-          {/* Headers */}
-          <div className="flex border-b">
-            <div 
-              className="bg-blue-700 text-white p-2 font-bold"
-              style={{ width: `${splitPosition}%` }}
-            >
-              Greek Text
-            </div>
-            <div 
-              className="bg-blue-700 text-white p-2 font-bold flex justify-between items-center border-l"
-              style={{ width: `${100 - splitPosition}%` }}
-            >
-              <span>Translation</span>
-              <div className="flex items-center gap-1">
-                {!isSaved && (
-                  <span className="text-xs text-yellow-200 italic mr-2">
-                    Unsaved changes
-                  </span>
-                )}
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={handleCopyToClipboard} 
-                  title="Copy to clipboard"
-                  className="h-6 w-6 p-0 bg-white"
-                >
-                  <Copy className="h-3 w-3 text-black" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={handleDownloadTranslation} 
-                  title="Download translation"
-                  className="h-6 w-6 p-0 bg-white"
-                >
-                  <Download className="h-3 w-3 text-black" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={handleSaveTranslation} 
-                  title="Save translation"
-                  className="h-6 px-2 bg-white text-black text-xs"
-                  disabled={isSaved}
-                >
-                  <Save className="h-3 w-3 mr-1" />
-                  Save
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          {/* Resizer and content */}
-          <div className="relative">
-            {/* Content - removed overflow property */}
-            <div className="relative" ref={textContainerRef}>
-              {verses.length > 0 ? (
-                verses.map((verse, index) => (
-                  <div key={`verse-row-${verse.number}`} className="flex border-b">
-                    {/* Greek Column */}
-                    <div 
-                      id={`greek-verse-${verse.number}`}
-                      className="p-4 pt-4 bg-white relative" // Relative positioning for labels
-                      style={{ width: `${splitPosition}%` }}
-                    >
-                      <div className="greek-text text-lg" style={{ 
-                        lineHeight: lineSpacing,
-                        wordSpacing: '0.4em',
-                      }}>
-                        {verse.words.map((word, wordIndex) => {
-                          // Format first word of verse to display verse number as superscript
-                          const displayWord = wordIndex === 0 && word.text.match(/^\[\d+\]/) 
-                          ? formatVerseText(word.text)
-                          : word.text;
-                          
-                        return (
-                          <WordContextMenu
-                            key={word.id}
-                            word={word}
-                            onLabelChange={handleLabelChange}
-                            onStartLine={handleStartLine}
-                            onEndLine={handleEndLine}
-                            onDeleteLine={handleDeleteLine}
-                            isDrawingLine={!!drawingLine}
-                            hasConnectedLines={hasConnectedLines(word)}
-                          >
-                            <span
-                              className={`cursor-pointer hover:bg-gray-200 rounded inline-block mr-2 ${
-                                word.parsing ? getParsingClass(word.parsing) : ""
-                              }`}
-                              onClick={(e) => handleWordClick(word, e)}
-                            >
-                              {displayWord}
-                            </span>
-                          </WordContextMenu>
-                        );
-                      })}
-                    </div>
-                  </div>
 
-                  {/* Translation Column */}
-                  <div 
-                    id={`translation-verse-${verse.number}`}
-                    className="p-4 bg-white border-l"
-                    style={{ width: `${100 - splitPosition}%` }}
-                  >
-                    <div className="text-blue-700 text-sm font-semibold mb-2">
-                      <sup>{verse.number}</sup>
-                    </div>
-                    <Textarea
-                      placeholder={`Translation for verse ${verse.number}...`}
-                      className="w-full border-0 p-0 focus-visible:ring-0 bg-transparent resize-none"
-                      style={{ 
-                        fontFamily: "'Times New Roman', serif",
-                      }}
-                      value={translationVerses[index] || ''}
-                      onChange={(e) => {
-                        const newVerses = [...translationVerses];
-                        newVerses[index] = e.target.value;
-                        setTranslation(newVerses.join('\n\n'));
-                        setIsSaved(false);
-                        debouncedUpdateTranslation();
-                      }}
-                    />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="flex border-b">
-                <div 
-                  className="p-4 bg-white"
-                  style={{ width: `${splitPosition}%` }}
-                >
-                  <div className="text-gray-500 italic">No verses detected</div>
-                </div>
-                <div 
-                  className="p-4 bg-white border-l"
-                  style={{ width: `${100 - splitPosition}%` }}
-                >
-                  <Textarea
-                    value={translation}
-                    onChange={handleTranslationChange}
-                    placeholder="Enter your translation here..."
-                    className="w-full min-h-[300px] border-0 p-0 focus-visible:ring-0 bg-transparent resize-none"
-                    style={{ fontFamily: "'Times New Roman', serif" }}
-                  />
-                </div>
-              </div>
-            )}
-            
-            {lines.map((line) => (
-              <ConnectingLine
-                key={line.id}
-                id={line.id}
-                startWord={line.startWord.text}
-                endWord={line.endWord.text}
-                startX={line.startX}
-                startY={line.startY}
-                endX={line.endX}
-                endY={line.endY}
-                annotation={line.annotation}
-                onAnnotationChange={(annotation) =>
-                  handleAnnotationChange(line.id, annotation)
-                }
-                onDeleteLine={() => {}}
-                onReverseDirection={() => {}}
-              />
-            ))}
-          </div>
-          
-          {/* Resizer handle */}
-          <div 
-            className="absolute top-0 bottom-0 w-5 bg-transparent hover:bg-gray-100 cursor-col-resize z-10 flex items-center justify-center transition-colors"
-            style={{ 
-              left: `calc(${splitPosition}% - 10px)`,
-              opacity: isDragging ? 0.8 : 0.5
-            }}
-            onMouseDown={handleMouseDown}
+{/* TRANSLATION MODE WITH SIDE-BY-SIDE LAYOUT */}
+{sections.length > 0 && showTranslation && (
+  <div className="border rounded-lg overflow-hidden" ref={splitContainerRef}>
+    {/* Headers with consistent alignment */}
+    <div className="flex border-b">
+      <div 
+        className="bg-blue-700 text-white p-2 flex items-center"
+        style={{ width: `${splitPosition}%` }}
+      >
+        <span className="font-bold pl-2">Greek Text</span>
+      </div>
+      <div 
+        className="bg-blue-700 text-white p-2 flex justify-between items-center border-l"
+        style={{ width: `${100 - splitPosition}%` }}
+      >
+        <span className="font-bold pl-2">Translation</span>
+        <div className="flex items-center gap-1">
+          {!isSaved && (
+            <span className="text-xs text-yellow-200 italic mr-2">
+              Unsaved changes
+            </span>
+          )}
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleCopyToClipboard} 
+            title="Copy to clipboard"
+            className="h-6 w-6 p-0 bg-white"
           >
-            <div className="h-12 w-1 bg-gray-300 rounded"></div>
+            <Copy className="h-3 w-3 text-black" />
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleDownloadTranslation} 
+            title="Download translation"
+            className="h-6 w-6 p-0 bg-white"
+          >
+            <Download className="h-3 w-3 text-black" />
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={handleSaveTranslation} 
+            title="Save translation"
+            className="h-6 px-2 bg-white text-black text-xs"
+            disabled={isSaved}
+          >
+            <Save className="h-3 w-3 mr-1" />
+            Save
+          </Button>
+        </div>
+      </div>
+    </div>
+    
+    {/* Content container */}
+    <div className="relative" ref={textContainerRef}>
+      {/* For each verse, create a row with Greek and translation side by side */}
+      {verses.length > 0 ? (
+        verses.map((verse, index) => (
+          <div key={`verse-row-${verse.number}`} className="flex border-b">
+            {/* Greek Column */}
+            <div 
+              id={`greek-verse-${verse.number}`}
+              className="p-4 bg-white relative"
+              style={{ 
+                width: `${splitPosition}%`,
+                minHeight: "80px"
+              }}
+            >
+              <div className="greek-text text-lg" style={{ 
+                lineHeight: lineSpacing,
+                wordSpacing: '0.4em',
+              }}>
+                {/* Show verse number only in the Greek column */}
+                <sup className="text-blue-700 font-semibold mr-1">{verse.number}</sup>
+                
+                {verse.words.map((word, wordIndex) => {
+                  // Skip displaying the bracket notation for verse markers
+                  const displayWord = wordIndex === 0 && word.text.match(/^\[\d+\]/) 
+                    ? word.text.replace(/^\[\d+\]\s*/, '') 
+                    : word.text;
+                    
+                  return (
+                    <WordContextMenu
+                      key={word.id}
+                      word={word}
+                      onLabelChange={handleLabelChange}
+                      onStartLine={handleStartLine}
+                      onEndLine={handleEndLine}
+                      onDeleteLine={handleDeleteLine}
+                      isDrawingLine={!!drawingLine}
+                      hasConnectedLines={hasConnectedLines(word)}
+                    >
+                      <span
+                        className={`cursor-pointer hover:bg-gray-200 rounded inline-block mr-2 ${
+                          word.parsing ? getParsingClass(word.parsing) : ""
+                        }`}
+                        onClick={(e) => handleWordClick(word, e)}
+                      >
+                        {displayWord}
+                      </span>
+                    </WordContextMenu>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Translation Column - linked to the same verse */}
+            <div 
+              className="p-4 bg-white border-l"
+              style={{ 
+                width: `${100 - splitPosition}%`,
+                minHeight: "80px"
+              }}
+            >
+              {/* No verse number here - removed as requested */}
+              <Textarea
+                placeholder={`Translation for verse ${verse.number}...`}
+                className="w-full h-full border-0 p-0 pt-2 focus-visible:ring-0 bg-transparent resize-none"
+                style={{ 
+                  fontFamily: "'Times New Roman', serif",
+                  minHeight: "60px"
+                }}
+                value={translationVerses[index] || ''}
+                onChange={(e) => {
+                  const newVerses = [...translationVerses];
+                  newVerses[index] = e.target.value;
+                  setTranslation(newVerses.join('\n\n'));
+                  setIsSaved(false);
+                  debouncedUpdateTranslation();
+                }}
+              />
+            </div>
+          </div>
+        ))
+      ) : (
+        // When no verses are detected
+        <div className="flex border-b">
+          <div 
+            className="p-4 bg-white"
+            style={{ width: `${splitPosition}%` }}
+          >
+            <div className="text-gray-500 italic">No verses detected</div>
+          </div>
+          <div 
+            className="p-4 bg-white border-l"
+            style={{ width: `${100 - splitPosition}%` }}
+          >
+            <Textarea
+              value={translation}
+              onChange={handleTranslationChange}
+              placeholder="Enter your translation here..."
+              className="w-full min-h-[300px] border-0 p-0 focus-visible:ring-0 bg-transparent resize-none"
+              style={{ fontFamily: "'Times New Roman', serif" }}
+            />
           </div>
         </div>
-            
-        {showCopiedAlert && (
-          <Alert className="m-2 py-1 bg-green-50 border-green-200">
-            <AlertDescription className="text-xs">Translation copied to clipboard!</AlertDescription>
-          </Alert>
-        )}
+      )}
+      
+      {/* Lines between words */}
+      {lines.map((line) => (
+        <ConnectingLine
+          key={line.id}
+          id={line.id}
+          startWord={line.startWord.text}
+          endWord={line.endWord.text}
+          startX={line.startX}
+          startY={line.startY}
+          endX={line.endX}
+          endY={line.endY}
+          annotation={line.annotation}
+          onAnnotationChange={(annotation) =>
+            handleAnnotationChange(line.id, annotation)
+          }
+          onDeleteLine={() => {}}
+          onReverseDirection={() => {}}
+        />
+      ))}
+      
+      {/* Resizer handle */}
+      <div 
+        className="absolute top-0 bottom-0 w-5 bg-transparent hover:bg-gray-100 cursor-col-resize z-10 flex items-center justify-center transition-colors"
+        style={{ 
+          left: `calc(${splitPosition}% - 10px)`,
+          opacity: isDragging ? 0.8 : 0.5
+        }}
+        onMouseDown={handleMouseDown}
+      >
+        <div className="h-12 w-1 bg-gray-300 rounded"></div>
       </div>
+    </div>
+    
+    {showCopiedAlert && (
+      <Alert className="m-2 py-1 bg-green-50 border-green-200">
+        <AlertDescription className="text-xs">Translation copied to clipboard!</AlertDescription>
+      </Alert>
     )}
+  </div>
+)}
 
     {selectedWord && (
       <div
@@ -1062,5 +1041,5 @@ export default function Home() {
       </div>
     )}
   </div>
-);
+  );
 }
