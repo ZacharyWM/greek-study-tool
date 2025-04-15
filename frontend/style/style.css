@@ -248,3 +248,238 @@ body {
   white-space: nowrap;
 }
 
+/* 
+ * Enhanced Translation Module Styles
+ * This file contains all the CSS needed for the translation module functionality
+ */
+
+/* Main layout container */
+.translation-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+/* Responsive layout for larger screens */
+@media (min-width: 1280px) {
+  .translation-container {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Column containers */
+.translation-column,
+.greek-column {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+/* Headers */
+.column-header {
+  background-color: #1d4ed8;
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Verse containers */
+.verse-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Individual verse boxes */
+.greek-verse,
+.translation-verse {
+  padding: 1rem;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Greek text styling */
+.greek-text {
+  font-size: 1.125rem;
+  line-height: 2.5;
+  letter-spacing: 0.01em;
+  word-spacing: 0.7em;
+  overflow-wrap: break-word;
+  padding: 0.5rem;
+  font-weight: 400;
+}
+
+/* Translation textarea styling */
+.translation-input {
+  width: 100%;
+  resize: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-family: 'Times New Roman', serif;
+  outline: none;
+  box-sizing: border-box;
+  min-height: 50px;
+}
+
+.translation-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Verse number styling */
+.verse-number {
+  font-size: 0.75rem;
+  vertical-align: super;
+  font-weight: 600;
+  color: #1d4ed8;
+  margin-right: 0.25rem;
+  line-height: 0;
+}
+
+/* Action buttons */
+.action-button {
+  height: 1.5rem;
+  width: 1.5rem;
+  padding: 0;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-button svg {
+  height: 0.75rem;
+  width: 0.75rem;
+  color: black;
+}
+
+.save-button {
+  height: 1.5rem;
+  padding: 0 0.5rem;
+  background-color: white;
+  color: black;
+  font-size: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Copied alert */
+.copied-alert {
+  margin: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+}
+
+/* Word styling with parsing */
+.parsed-word {
+  border-radius: 0.25rem;
+  padding: 0 0.25rem;
+  margin-right: 0.5rem;
+  display: inline-block;
+}
+
+/* Case stylings */
+.case-nominative {
+  color: #2563eb;
+}
+
+.case-genitive {
+  color: #1e3a8a;
+}
+
+.case-dative {
+  color: #f97316;
+}
+
+.case-accusative {
+  color: #dc2626;
+}
+
+/* Mood stylings */
+.mood-indicative {
+  color: #16a34a;
+}
+
+.mood-subjunctive {
+  color: #db2777;
+}
+
+.mood-infinitive {
+  color: #ca8a04;
+}
+
+.mood-imperative {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.mood-participle {
+  color: #9333ea;
+}
+
+/* Part of speech stylings */
+.adjective {
+  font-style: italic;
+}
+
+.adverb {
+  text-decoration: underline;
+}
+
+.preposition {
+  font-variant: small-caps;
+}
+
+/* Hover effects */
+.word-hover:hover {
+  background-color: #e5e7eb;
+  cursor: pointer;
+}
+
+/* Line spacing control */
+.line-spacing-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.line-spacing-slider {
+  width: 8rem;
+}
+
+/* Toggle styles */
+.translation-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Unsaved changes indicator */
+.unsaved-indicator {
+  font-size: 0.75rem;
+  color: #f59e0b;
+  font-style: italic;
+  margin-right: 0.5rem;
+}
