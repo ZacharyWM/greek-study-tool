@@ -942,6 +942,8 @@ export default function Home() {
         </div>
       )}
 
+// placeholder
+
       {selectedWord && (
         <div
           style={{
