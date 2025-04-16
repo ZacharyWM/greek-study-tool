@@ -3,3 +3,4 @@ tmp
 frontend/build
 
 .env
+server/database/books
