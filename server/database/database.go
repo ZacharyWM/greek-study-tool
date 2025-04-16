@@ -56,51 +56,53 @@ func InitDB() {
 
 // TODO - work out a better migration strategy
 func RunMigrations() {
-	createUsersTableCmd := `
-	CREATE TABLE IF NOT EXISTS users (
-		id SERIAL PRIMARY KEY,
-		idp_id VARCHAR(255) NOT NULL,
-		first_name VARCHAR(255),
-		last_name VARCHAR(255),
-		nickname VARCHAR(255),
-		name VARCHAR(255),
-		picture TEXT,
-		email VARCHAR(255),
-		email_verified BOOLEAN
-	);
-	
-	CREATE UNIQUE INDEX IF NOT EXISTS idx_users_idp_id ON users(idp_id);
-	`
-	_, err := DB.Exec(createUsersTableCmd)
-	if err != nil {
-		log.Fatalf("Error creating users table: %v", err)
-	}
+	/*
+		createUsersTableCmd := `
+		CREATE TABLE IF NOT EXISTS users (
+			id SERIAL PRIMARY KEY,
+			idp_id VARCHAR(255) NOT NULL,
+			first_name VARCHAR(255),
+			last_name VARCHAR(255),
+			nickname VARCHAR(255),
+			name VARCHAR(255),
+			picture TEXT,
+			email VARCHAR(255),
+			email_verified BOOLEAN
+		);
 
-	createAnalyesesTableCmd := `
-		CREATE TABLE IF NOT EXISTS analyses (
-		id SERIAL PRIMARY KEY,
-		user_id INTEGER NOT NULL REFERENCES users(id),
-		details JSONB
-	);
-	
-	CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id);
-	`
-	_, err = DB.Exec(createAnalyesesTableCmd)
-	if err != nil {
-		log.Fatalf("Error creating analyses table: %v", err)
-	}
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_users_idp_id ON users(idp_id);
+		`
+		_, err := DB.Exec(createUsersTableCmd)
+		if err != nil {
+			log.Fatalf("Error creating users table: %v", err)
+		}
 
-	addFieldsToAnalyesesTableCmd := `
-		ALTER TABLE analyses 
-		ADD COLUMN title VARCHAR(100),
-		ADD COLUMN description TEXT,
-		ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-		ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-	`
-	_, err = DB.Exec(addFieldsToAnalyesesTableCmd)
-	if err != nil {
-		slog.Debug("This is expected if the 'analyses table already exists")
-	}
+		createAnalyesesTableCmd := `
+			CREATE TABLE IF NOT EXISTS analyses (
+			id SERIAL PRIMARY KEY,
+			user_id INTEGER NOT NULL REFERENCES users(id),
+			details JSONB
+		);
+
+		CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id);
+		`
+		_, err = DB.Exec(createAnalyesesTableCmd)
+		if err != nil {
+			log.Fatalf("Error creating analyses table: %v", err)
+		}
+
+		addFieldsToAnalyesesTableCmd := `
+			ALTER TABLE analyses
+			ADD COLUMN title VARCHAR(100),
+			ADD COLUMN description TEXT,
+			ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+			ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+		`
+		_, err = DB.Exec(addFieldsToAnalyesesTableCmd)
+		if err != nil {
+			slog.Debug("This is expected if the 'analyses table already exists")
+		}
+	*/
 
 	// Create Books table
 	createBooksTableCmd := `
@@ -109,7 +111,7 @@ func RunMigrations() {
 		title VARCHAR(255) NOT NULL
 	);
 	`
-	_, err = DB.Exec(createBooksTableCmd)
+	_, err := DB.Exec(createBooksTableCmd)
 	if err != nil {
 		slog.Debug("This is expected if the 'books' table already exists")
 	}
