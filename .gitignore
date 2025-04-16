@@ -3,3 +3,5 @@ tmp
 frontend/build
 
 .env
+
+.DS_Store
