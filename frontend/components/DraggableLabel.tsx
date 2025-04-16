@@ -72,6 +72,20 @@ const DraggableLabel = ({
     };
   }, [isDragging, position]);
 
+  // Styling for DraggableLabel component
+// Updates to make it match Oxford Scholar theme
+const customLabelStyles = {
+  color: "#252525", // Dark text
+  fontFamily: "'EB Garamond', 'Georgia', serif",
+  boxShadow: "0 1px 2px rgba(0,0,0,0.1)"
+};
+
+const customActiveStyles = {
+  background: "#F7F1E3", // Cream background
+  boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+  borderColor: "#9F1C1C" // Oxford red border
+};
+
   return (
     <div
       ref={labelRef}

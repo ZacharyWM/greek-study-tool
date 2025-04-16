@@ -15,15 +15,13 @@ export const NavigationBar: React.FC = () => {
   } = useAuth0();
 
   useEffect(() => {
-    console.log("isAuthenticated", isAuthenticated);
     if (isAuthenticated) {
       (async () => {
         const jwt = await getAccessTokenSilently();
         const userData = await fetchUserData(jwt);
-        console.log("userData", userData);
       })();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, getAccessTokenSilently]);
 
   const userLogout = () => {
     logout({ logoutParams: { returnTo: window.location.origin } });
@@ -41,14 +39,8 @@ export const NavigationBar: React.FC = () => {
   const greekTextFirstLine = "σπούδασον σεαυτὸν δόκιμον παραστῆσαι τῷ θεῷ, ἐργάτην ἀνεπαίσχυντον,";
   const greekTextSecondLine = "ὀρθοτομοῦντα τὸν λόγον τῆς ἀληθείας.";
 
-  // Academic font style for both title and reference
-  const academicFontStyle = {
-    fontFamily: "'Palatino Linotype', 'Book Antiqua', Palatino, serif",
-    letterSpacing: "0.05em"
-  };
-
   return (
-    <nav className="bg-gray-800 text-white p-4">
+    <nav className="navigation-bar">
       <div className="flex flex-col md:flex-row items-center">
         {/* Left section with menu and title */}
         <div className="flex items-center w-full md:w-auto justify-between md:justify-start">
@@ -76,30 +68,24 @@ export const NavigationBar: React.FC = () => {
 
               {isDropdownOpen && (
                 <div
-                  className="absolute left-0 mt-2 w-96 bg-white text-gray-800 rounded-md shadow-lg py-1 z-10"
-                  style={{ width: "10rem" }}
+                  className="absolute left-0 mt-2 w-48 bg-card text-card-foreground rounded-md shadow-lg py-1 z-10 border border-border"
                 >
                   <a
                     href="/analysis?new=true"
-                    className="block px-4 py-2 hover:bg-gray-200"
-                    style={{ color: "black" }}
+                    className="block px-4 py-2 hover:bg-secondary"
                   >
                     Create New
                   </a>
                   <a
                     href="/analyses"
-                    className="block px-4 py-2 hover:bg-gray-200"
-                    style={{ color: "black" }}
+                    className="block px-4 py-2 hover:bg-secondary"
                   >
                     Your Analyses
                   </a>
                 </div>
               )}
             </div>
-            <div 
-              className="text-lg font-bold"
-              style={academicFontStyle}
-            >
+            <div className="navigation-title text-lg font-bold">
               Greek Syntax Lab
             </div>
           </div>
@@ -109,12 +95,12 @@ export const NavigationBar: React.FC = () => {
             {isAuthenticated ? (
               <button
                 onClick={userLogout}
-                className="bg-red-500 px-3 py-1 rounded text-sm"
+                className="bg-accent px-3 py-1 rounded text-sm academic-button"
               >
                 Logout
               </button>
             ) : (
-              <button onClick={userLogin} className="bg-blue-500 px-3 py-1 rounded text-sm">
+              <button onClick={userLogin} className="bg-accent px-3 py-1 rounded text-sm academic-button">
                 Login
               </button>
             )}
@@ -122,25 +108,11 @@ export const NavigationBar: React.FC = () => {
         </div>
         
         {/* Center Greek Text - with two lines */}
-        <div 
-          className="my-2 md:my-0 mx-auto text-center px-4 flex-1 max-w-2xl"
-        >
-          <div 
-            className="text-xs text-gray-300 tracking-wider mb-1"
-            style={{ 
-              ...academicFontStyle,
-              fontVariantCaps: "small-caps"
-            }}
-          >
+        <div className="my-2 md:my-0 mx-auto text-center px-4 flex-1 max-w-2xl">
+          <div className="text-xs text-primary-foreground/80 tracking-wider mb-1 font-small-caps">
             2 Timothy 2:15
           </div>
-          <div 
-            className="text-sm md:text-base"
-            style={{ 
-              fontFamily: "SBLBibLit, serif",
-              lineHeight: "1.5"
-            }}
-          >
+          <div className="greek-text nav-greek-text text-sm md:text-base leading-relaxed">
             <div>{greekTextFirstLine}</div>
             <div>{greekTextSecondLine}</div>
           </div>
@@ -153,13 +125,13 @@ export const NavigationBar: React.FC = () => {
               <span className="mr-4">Hello, {user?.given_name}</span>
               <button
                 onClick={userLogout}
-                className="bg-red-500 px-4 py-2 rounded"
+                className="bg-accent px-4 py-2 rounded academic-button"
               >
                 Logout
               </button>
             </>
           ) : (
-            <button onClick={userLogin} className="bg-blue-500 px-4 py-2 rounded">
+            <button onClick={userLogin} className="bg-accent px-4 py-2 rounded academic-button">
               Login
             </button>
           )}
@@ -168,3 +140,5 @@ export const NavigationBar: React.FC = () => {
     </nav>
   );
 };
+
+export default NavigationBar;

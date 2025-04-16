@@ -47,7 +47,7 @@ export default function Home() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
-  const [lineSpacing, setLineSpacing] = useState(1.6);
+  const [lineSpacing, setLineSpacing] = useState(3);
   const [analysisId, setAnalysisId] = useState<number>(parseInt(id || "0"));
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
@@ -473,10 +473,6 @@ export default function Home() {
     }
   };
 
-  const handleLineSpacingChange = (value: number[]) => {
-    setLineSpacing(value[0]);
-  };
-
   const handleCopyToClipboard = () => {
     if (translation) {
       navigator.clipboard.writeText(translation);
@@ -642,20 +638,6 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4">
-          <div>
-            <Label htmlFor="line-spacing" className="block mb-2">
-              Line Spacing
-            </Label>
-            <Slider
-              id="line-spacing"
-              min={1}
-              max={3}
-              step={0.1}
-              value={[lineSpacing]}
-              onValueChange={handleLineSpacingChange}
-              className="w-32"
-            />
-          </div>
 
           {/* Layout Options */}
           {showTranslation && (

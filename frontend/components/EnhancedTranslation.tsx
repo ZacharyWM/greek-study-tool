@@ -177,6 +177,41 @@ const EnhancedTranslation: React.FC<EnhancedTranslationProps> = ({
     }
   };
   
+  // Styling updates for verse containers
+const verseContainerStyle = {
+  fontFamily: "'EB Garamond', 'Georgia', serif",
+  fontSize: "1.1rem",
+  lineHeight: "1.6",
+  color: "#252525", // Dark text
+  background: "#FFFFFF", // White background for content
+  border: "1px solid #D1C4AC", // Cream border
+  borderRadius: "0.25rem",
+  margin: "0.5rem 0",
+  padding: "1rem"
+};
+
+// Styling for verse numbers
+const verseNumberStyle = {
+  fontFamily: "'EB Garamond', 'Georgia', serif",
+  fontWeight: "600",
+  color: "#9F1C1C", // Oxford red
+  fontSize: "0.875rem"
+};
+
+// Styling for panel headers
+const panelHeaderStyle = {
+  backgroundColor: "#002147", // Oxford blue
+  color: "#FFFFFF",
+  padding: "0.75rem 1rem",
+  fontFamily: "'EB Garamond', 'Georgia', serif",
+  fontWeight: "600",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  borderTopLeftRadius: "0.25rem",
+  borderTopRightRadius: "0.25rem"
+};
+
   // Function to format verse marker as superscript
   const formatVerseText = (text: string): React.ReactNode => {
     const match = text.match(/^\[(\d+)\](.*)/);
