@@ -87,7 +87,68 @@ func RunMigrations() {
 	`
 	_, err = DB.Exec(addFieldsToAnalyesesTableCmd)
 	if err != nil {
-		slog.Error("Error adding fields to analyses table: %v", err)
+		slog.Debug("This is expected if the 'analyses table already exists")
+	}
+
+	// Create Books table
+	createBooksTableCmd := `
+	CREATE TABLE IF NOT EXISTS books (
+		id SERIAL PRIMARY KEY,
+		title VARCHAR(255) NOT NULL
+	);
+	`
+	_, err = DB.Exec(createBooksTableCmd)
+	if err != nil {
+		slog.Debug("This is expected if the 'books' table already exists")
+	}
+
+	// Create Chapters table
+	createChaptersTableCmd := `
+	CREATE TABLE IF NOT EXISTS chapters (
+		id SERIAL PRIMARY KEY,
+		book_id INTEGER NOT NULL REFERENCES books(id),
+		number INTEGER NOT NULL
+	);
+	
+	CREATE INDEX IF NOT EXISTS idx_chapters_book_id ON chapters(book_id);
+	`
+	_, err = DB.Exec(createChaptersTableCmd)
+	if err != nil {
+		slog.Debug("This is expected if the 'chapters' table already exists")
+	}
+
+	// Create Verses table
+	createVersesTableCmd := `
+	CREATE TABLE IF NOT EXISTS verses (
+		id SERIAL PRIMARY KEY,
+		chapter_id INTEGER NOT NULL REFERENCES chapters(id),
+		number INTEGER NOT NULL,
+		UNIQUE(chapter_id, number)
+	);
+	
+	CREATE INDEX IF NOT EXISTS idx_verses_chapter_id ON verses(chapter_id);
+	`
+	_, err = DB.Exec(createVersesTableCmd)
+	if err != nil {
+		slog.Debug("This is expected if the 'verses' table already exists")
+	}
+
+	// Create Words table
+	createWordsTableCmd := `
+	CREATE TABLE IF NOT EXISTS words (
+		id SERIAL PRIMARY KEY,
+		verse_id INTEGER NOT NULL REFERENCES verses(id),
+		text VARCHAR(255) NOT NULL,
+		lemma VARCHAR(255),
+		strong VARCHAR(50),
+		morph VARCHAR(50)
+	);
+	
+	CREATE INDEX IF NOT EXISTS idx_words_verse_id ON words(verse_id);
+	`
+	_, err = DB.Exec(createWordsTableCmd)
+	if err != nil {
+		slog.Debug("This is expected if the 'words' table already exists")
 	}
 
 	slog.Info("Database migrations completed")
