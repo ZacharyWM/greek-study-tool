@@ -8,6 +8,7 @@ import ParseWordDialog from "../components/ParseWordDialog";
 import WordContextMenu from "../components/WordContextMenu";
 import ParsedWordSummary from "../components/ParsedWordSummary";
 import { getParsingClass } from "../lib/parsing-styles";
+import { Slider } from "../components/ui/slider";
 import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { Save, Copy, Download } from "lucide-react";
@@ -17,17 +18,6 @@ import debounce from "lodash/debounce";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
-
-interface Line {
-  id: number;
-  startWord: Word;
-  endWord: Word;
-  startX: number;
-  startY: number;
-  endX: number;
-  endY: number;
-  annotation?: string;
-}
 
 // TranslationToggle component
 const TranslationToggle: React.FC<{
@@ -57,25 +47,18 @@ export default function Home() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
-  const [lines, setLines] = useState<Line[]>([]);
-  const [drawingLine, setDrawingLine] = useState<{
-    startWord: Word;
-    startX: number;
-    startY: number;
-  } | null>(null);
-  // Fixed line spacing - no longer adjustable
-  const lineSpacing = 3.0;
+  const [lineSpacing, setLineSpacing] = useState(1.6);
   const [analysisId, setAnalysisId] = useState<number>(parseInt(id || "0"));
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
   const [translation, setTranslation] = useState<string>("");
   const [isSaved, setIsSaved] = useState<boolean>(true);
   const [showCopiedAlert, setShowCopiedAlert] = useState<boolean>(false);
-  
+
   // Split position state for resizable translation panel
   const [splitPosition, setSplitPosition] = useState<number>(50); // Default 50% split
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
@@ -93,10 +76,10 @@ export default function Home() {
   // Function to extract verses from section
   const extractVerses = (section) => {
     if (!section || !section.words || !section.words.length) return [];
-    
+
     const verses: { number: string; words: any[] }[] = [];
     let currentVerse: { number: string; words: any[] } | null = null;
-    
+
     section.words.forEach((word, index) => {
       // Check if this word starts a new verse
       if (word.text.match(/^\[\d+\]/)) {
@@ -107,11 +90,11 @@ export default function Home() {
           if (currentVerse) {
             verses.push(currentVerse);
           }
-          
+
           // Start a new verse
           currentVerse = {
             number: match[1],
-            words: [word]
+            words: [word],
           };
         }
       } else if (currentVerse) {
@@ -121,16 +104,16 @@ export default function Home() {
         // First word with no verse marker, create a default verse
         currentVerse = {
           number: "1",
-          words: [word]
+          words: [word],
         };
       }
     });
-    
+
     // Add the last verse
     if (currentVerse) {
       verses.push(currentVerse);
     }
-    
+
     return verses;
   };
 
@@ -153,11 +136,16 @@ export default function Home() {
           if (data.details.sections) {
             setSections(data.details.sections);
             // Set translation if it exists in the first section
-            if (data.details.sections.length > 0 && data.details.sections[0].translation) {
+            if (
+              data.details.sections.length > 0 &&
+              data.details.sections[0].translation
+            ) {
               setTranslation(data.details.sections[0].translation);
             }
           }
-          if (data.details.lines) setLines(data.details.lines);
+          if (data.details.lineSpacing) {
+            setLineSpacing(data.details.lineSpacing);
+          }
           // Set the translation visibility if it exists in saved data
           if (data.details.showTranslation !== undefined) {
             setShowTranslation(data.details.showTranslation);
@@ -229,7 +217,7 @@ export default function Home() {
     saveTitle: string,
     saveDescription: string,
     saveSections: Section[],
-    saveLines: Line[],
+    saveLineSpacing: number,
     saveAnalysisId: number,
     saveShowTranslation: boolean,
     saveSplitPosition: number
@@ -241,9 +229,9 @@ export default function Home() {
 
       const analysisData = {
         sections: saveSections,
-        lines: saveLines,
+        lineSpacing: saveLineSpacing,
         showTranslation: saveShowTranslation,
-        splitPosition: saveSplitPosition
+        splitPosition: saveSplitPosition,
       };
 
       const requestOptions = {
@@ -285,7 +273,7 @@ export default function Home() {
         saveTitle: string,
         saveDescription: string,
         saveSections: Section[],
-        saveLines: Line[],
+        saveLineSpacing: number,
         saveAnalysisId: number,
         saveShowTranslation: boolean,
         saveSplitPosition: number
@@ -294,7 +282,7 @@ export default function Home() {
           saveTitle,
           saveDescription,
           saveSections,
-          saveLines,
+          saveLineSpacing,
           saveAnalysisId,
           saveShowTranslation,
           saveSplitPosition
@@ -308,11 +296,11 @@ export default function Home() {
   // Update sections with translation
   const updateSectionsWithTranslation = useCallback(() => {
     if (sections.length > 0) {
-      setSections(prevSections => {
+      setSections((prevSections) => {
         const newSections = [...prevSections];
         newSections[0] = {
           ...newSections[0],
-          translation: translation
+          translation: translation,
         };
         return newSections;
       });
@@ -328,7 +316,9 @@ export default function Home() {
   );
 
   // Handle translation changes
-  const handleTranslationChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleTranslationChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     setTranslation(e.target.value);
     setIsSaved(false);
     debouncedUpdateTranslation();
@@ -353,7 +343,7 @@ export default function Home() {
         title,
         description,
         sections,
-        lines,
+        lineSpacing,
         analysisId,
         showTranslation,
         splitPosition
@@ -361,13 +351,13 @@ export default function Home() {
     }
   }, [
     sections,
-    lines,
+    lineSpacing,
     debouncedSave,
     title,
     description,
     analysisId,
     showTranslation,
-    splitPosition
+    splitPosition,
   ]);
 
   // Function to format verse marker as superscript
@@ -410,13 +400,12 @@ export default function Home() {
 
       setSections([newSection]);
       setInputText("");
-      setLines([]);
       setTranslation("");
     }
   };
 
   const handleWordClick = (word: Word, event: React.MouseEvent) => {
-    if (event.type === "contextmenu" || drawingLine) {
+    if (event.type === "contextmenu") {
       return;
     }
 
@@ -455,7 +444,11 @@ export default function Home() {
     );
   };
 
-  const handleLabelChange = (wordId: number, newLabel: string | undefined, position?: { x: number, y: number }) => {
+  const handleLabelChange = (
+    wordId: number,
+    newLabel: string | undefined,
+    position?: { x: number; y: number }
+  ) => {
     setSections((prevSections) =>
       prevSections.map((section) => ({
         ...section,
@@ -464,7 +457,7 @@ export default function Home() {
             return {
               ...w,
               label: newLabel,
-              labelPosition: position || w.labelPosition
+              labelPosition: position || w.labelPosition,
             };
           }
           return w;
@@ -480,60 +473,8 @@ export default function Home() {
     }
   };
 
-  const handleStartLine = (word: Word, x: number, y: number) => {
-    if (textContainerRef.current) {
-      const containerRect = textContainerRef.current.getBoundingClientRect();
-      setDrawingLine({
-        startWord: word,
-        startX: x - containerRect.left,
-        startY: y - containerRect.top,
-      });
-    }
-  };
-
-  const handleEndLine = (word: Word, x: number, y: number) => {
-    if (
-      drawingLine &&
-      drawingLine.startWord.id !== word.id &&
-      textContainerRef.current
-    ) {
-      const containerRect = textContainerRef.current.getBoundingClientRect();
-      setLines((prevLines) => [
-        ...prevLines,
-        {
-          id: Date.now(),
-          startWord: drawingLine.startWord,
-          endWord: word,
-          startX: drawingLine.startX,
-          startY: drawingLine.startY,
-          endX: x - containerRect.left,
-          endY: y - containerRect.top,
-        },
-      ]);
-      setDrawingLine(null);
-    }
-  };
-
-  const hasConnectedLines = (word: Word) => {
-    return lines.some(
-      (line) => line.startWord.id === word.id || line.endWord.id === word.id
-    );
-  };
-
-  const handleDeleteLine = (word: Word) => {
-    setLines((prevLines) =>
-      prevLines.filter(
-        (line) => line.startWord.id !== word.id && line.endWord.id !== word.id
-      )
-    );
-  };
-
-  const handleAnnotationChange = (lineId: number, annotation: string) => {
-    setLines((prevLines) =>
-      prevLines.map((line) =>
-        line.id === lineId ? { ...line, annotation } : line
-      )
-    );
+  const handleLineSpacingChange = (value: number[]) => {
+    setLineSpacing(value[0]);
   };
 
   const handleCopyToClipboard = () => {
@@ -563,10 +504,17 @@ export default function Home() {
       )
     ) {
       setSections([]);
-      setLines([]);
       setInputText("");
       setTranslation("");
-      debouncedSave(title, description, [], [], analysisId, showTranslation, splitPosition);
+      debouncedSave(
+        title,
+        description,
+        [],
+        lineSpacing,
+        analysisId,
+        showTranslation,
+        splitPosition
+      );
     }
   };
 
@@ -617,15 +565,15 @@ export default function Home() {
   // Handle mouse move for resizing
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging || !splitContainerRef.current) return;
-    
+
     const containerRect = splitContainerRef.current.getBoundingClientRect();
     const containerWidth = containerRect.width;
     const mouseX = e.clientX - containerRect.left;
-    
+
     // Calculate percentage (with limits to prevent extreme sizing)
     let newSplitPosition = (mouseX / containerWidth) * 100;
     newSplitPosition = Math.max(30, Math.min(70, newSplitPosition));
-    
+
     setSplitPosition(newSplitPosition);
   };
 
@@ -637,26 +585,26 @@ export default function Home() {
   // Add event listeners for mouse move and up
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     }
-    
+
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging]);
 
   // Preset split layouts
-  const setLayout = (preset: 'greek' | 'equal' | 'translation') => {
-    switch(preset) {
-      case 'greek':
+  const setLayout = (preset: "greek" | "equal" | "translation") => {
+    switch (preset) {
+      case "greek":
         setSplitPosition(65);
         break;
-      case 'equal':
+      case "equal":
         setSplitPosition(50);
         break;
-      case 'translation':
+      case "translation":
         setSplitPosition(35);
         break;
       default:
@@ -694,48 +642,63 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4">
-          {/* Translation Toggle */}
           <div>
-            <TranslationToggle 
-              isEnabled={showTranslation} 
-              onToggle={setShowTranslation} 
+            <Label htmlFor="line-spacing" className="block mb-2">
+              Line Spacing
+            </Label>
+            <Slider
+              id="line-spacing"
+              min={1}
+              max={3}
+              step={0.1}
+              value={[lineSpacing]}
+              onValueChange={handleLineSpacingChange}
+              className="w-32"
             />
           </div>
-          
+
           {/* Layout Options */}
           {showTranslation && (
             <div className="flex items-center gap-2">
               <span className="text-sm">Layout:</span>
               <div className="flex border rounded overflow-hidden">
-                <button 
-                  className={`px-2 py-1 text-xs ${splitPosition >= 60 ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-                  onClick={() => setLayout('greek')}
+                <button
+                  className={`px-2 py-1 text-xs ${
+                    splitPosition >= 60 ? "bg-blue-100" : "hover:bg-gray-100"
+                  }`}
+                  onClick={() => setLayout("greek")}
                 >
                   Greek Focus
                 </button>
-                <button 
-                  className={`px-2 py-1 text-xs border-l border-r ${splitPosition > 40 && splitPosition < 60 ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-                  onClick={() => setLayout('equal')}
+                <button
+                  className={`px-2 py-1 text-xs border-l border-r ${
+                    splitPosition > 40 && splitPosition < 60
+                      ? "bg-blue-100"
+                      : "hover:bg-gray-100"
+                  }`}
+                  onClick={() => setLayout("equal")}
                 >
                   Equal
                 </button>
-                <button 
-                  className={`px-2 py-1 text-xs ${splitPosition <= 40 ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-                  onClick={() => setLayout('translation')}
+                <button
+                  className={`px-2 py-1 text-xs ${
+                    splitPosition <= 40 ? "bg-blue-100" : "hover:bg-gray-100"
+                  }`}
+                  onClick={() => setLayout("translation")}
                 >
                   Translation Focus
                 </button>
               </div>
             </div>
           )}
-          
+
           <Button onClick={clearAllData} variant="secondary">
             Clear
           </Button>
         </div>
       </div>
-      
-      {sections.length == 0 && (
+
+      {sections.length === 0 && (
         <div className="mb-4">
           <Textarea
             value={inputText}
@@ -753,12 +716,10 @@ export default function Home() {
       {sections.length > 0 && !showTranslation && (
         <div className="border rounded-lg" ref={textContainerRef}>
           {/* Royal Blue header */}
-          <div className="bg-blue-700 text-white p-2 font-bold">
-            Greek Text
-          </div>
-          
+          <div className="bg-blue-700 text-white p-2 font-bold">Greek Text</div>
+
           {/* Remove overflow hidden, add padding, and ensure proper positioning context */}
-          <div className="p-4 pt-4 relative"> 
+          <div className="p-4 pt-4 relative">
             <div
               className="greek-text text-lg break-words"
               style={{ lineHeight: lineSpacing, wordSpacing: "0.4em" }}
@@ -771,11 +732,11 @@ export default function Home() {
                   <WordContextMenu
                     word={word}
                     onLabelChange={handleLabelChange}
-                    onStartLine={handleStartLine}
-                    onEndLine={handleEndLine}
-                    onDeleteLine={handleDeleteLine}
-                    isDrawingLine={!!drawingLine}
-                    hasConnectedLines={hasConnectedLines(word)}
+                    onStartLine={() => {}}
+                    onEndLine={() => {}}
+                    onDeleteLine={() => {}}
+                    isDrawingLine={false}
+                    hasConnectedLines={false}
                   >
                     <span
                       className={`cursor-pointer hover:bg-gray-200 rounded inline-block mr-2 ${
@@ -789,257 +750,225 @@ export default function Home() {
                 </React.Fragment>
               )) || "No text submitted yet."}
             </div>
-            {lines.map((line) => (
-              <ConnectingLine
-                key={line.id}
-                id={line.id}
-                startWord={line.startWord.text}
-                endWord={line.endWord.text}
-                startX={line.startX}
-                startY={line.startY}
-                endX={line.endX}
-                endY={line.endY}
-                annotation={line.annotation}
-                onAnnotationChange={(annotation) =>
-                  handleAnnotationChange(line.id, annotation)
-                }
-                onDeleteLine={() => {}}
-                onReverseDirection={() => {}}
-              />
-            ))}
           </div>
         </div>
       )}
 
-
-{/* TRANSLATION MODE WITH SIDE-BY-SIDE LAYOUT */}
-{sections.length > 0 && showTranslation && (
-  <div className="border rounded-lg overflow-hidden" ref={splitContainerRef}>
-    {/* Headers with consistent alignment */}
-    <div className="flex border-b">
-      <div 
-        className="bg-blue-700 text-white p-2 flex items-center"
-        style={{ width: `${splitPosition}%` }}
-      >
-        <span className="font-bold pl-2">Greek Text</span>
-      </div>
-      <div 
-        className="bg-blue-700 text-white p-2 flex justify-between items-center border-l"
-        style={{ width: `${100 - splitPosition}%` }}
-      >
-        <span className="font-bold pl-2">Translation</span>
-        <div className="flex items-center gap-1">
-          {!isSaved && (
-            <span className="text-xs text-yellow-200 italic mr-2">
-              Unsaved changes
-            </span>
-          )}
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={handleCopyToClipboard} 
-            title="Copy to clipboard"
-            className="h-6 w-6 p-0 bg-white"
-          >
-            <Copy className="h-3 w-3 text-black" />
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={handleDownloadTranslation} 
-            title="Download translation"
-            className="h-6 w-6 p-0 bg-white"
-          >
-            <Download className="h-3 w-3 text-black" />
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={handleSaveTranslation} 
-            title="Save translation"
-            className="h-6 px-2 bg-white text-black text-xs"
-            disabled={isSaved}
-          >
-            <Save className="h-3 w-3 mr-1" />
-            Save
-          </Button>
-        </div>
-      </div>
-    </div>
-    
-    {/* Content container */}
-    <div className="relative" ref={textContainerRef}>
-      {/* For each verse, create a row with Greek and translation side by side */}
-      {verses.length > 0 ? (
-        verses.map((verse, index) => (
-          <div key={`verse-row-${verse.number}`} className="flex border-b">
-            {/* Greek Column */}
-            <div 
-              id={`greek-verse-${verse.number}`}
-              className="p-4 bg-white relative"
-              style={{ 
-                width: `${splitPosition}%`,
-                minHeight: "80px"
-              }}
+      {/* TRANSLATION MODE WITH SIDE-BY-SIDE LAYOUT */}
+      {sections.length > 0 && showTranslation && (
+        <div className="border rounded-lg" ref={splitContainerRef}>
+          {/* Headers */}
+          <div className="flex border-b">
+            <div
+              className="bg-blue-700 text-white p-2 font-bold"
+              style={{ width: `${splitPosition}%` }}
             >
-              <div className="greek-text text-lg" style={{ 
-                lineHeight: lineSpacing,
-                wordSpacing: '0.4em',
-              }}>
-                {/* Show verse number only in the Greek column */}
-                <sup className="text-blue-700 font-semibold mr-1">{verse.number}</sup>
-                
-                {verse.words.map((word, wordIndex) => {
-                  // Skip displaying the bracket notation for verse markers
-                  const displayWord = wordIndex === 0 && word.text.match(/^\[\d+\]/) 
-                    ? word.text.replace(/^\[\d+\]\s*/, '') 
-                    : word.text;
-                    
-                  return (
-                    <WordContextMenu
-                      key={word.id}
-                      word={word}
-                      onLabelChange={handleLabelChange}
-                      onStartLine={handleStartLine}
-                      onEndLine={handleEndLine}
-                      onDeleteLine={handleDeleteLine}
-                      isDrawingLine={!!drawingLine}
-                      hasConnectedLines={hasConnectedLines(word)}
-                    >
-                      <span
-                        className={`cursor-pointer hover:bg-gray-200 rounded inline-block mr-2 ${
-                          word.parsing ? getParsingClass(word.parsing) : ""
-                        }`}
-                        onClick={(e) => handleWordClick(word, e)}
-                      >
-                        {displayWord}
-                      </span>
-                    </WordContextMenu>
-                  );
-                })}
+              Greek Text
+            </div>
+            <div
+              className="bg-blue-700 text-white p-2 font-bold flex justify-between items-center border-l"
+              style={{ width: `${100 - splitPosition}%` }}
+            >
+              <span>Translation</span>
+              <div className="flex items-center gap-1">
+                {!isSaved && (
+                  <span className="text-xs text-yellow-200 italic mr-2">
+                    Unsaved changes
+                  </span>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCopyToClipboard}
+                  title="Copy to clipboard"
+                  className="h-6 w-6 p-0 bg-white"
+                >
+                  <Copy className="h-3 w-3 text-black" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDownloadTranslation}
+                  title="Download translation"
+                  className="h-6 w-6 p-0 bg-white"
+                >
+                  <Download className="h-3 w-3 text-black" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSaveTranslation}
+                  title="Save translation"
+                  className="h-6 px-2 bg-white text-black text-xs"
+                  disabled={isSaved}
+                >
+                  <Save className="h-3 w-3 mr-1" />
+                  Save
+                </Button>
               </div>
             </div>
+          </div>
 
-            {/* Translation Column - linked to the same verse */}
-            <div 
-              className="p-4 bg-white border-l"
-              style={{ 
-                width: `${100 - splitPosition}%`,
-                minHeight: "80px"
-              }}
-            >
-              {/* No verse number here - removed as requested */}
-              <Textarea
-                placeholder={`Translation for verse ${verse.number}...`}
-                className="w-full h-full border-0 p-0 pt-2 focus-visible:ring-0 bg-transparent resize-none"
-                style={{ 
-                  fontFamily: "'Times New Roman', serif",
-                  minHeight: "60px"
+          {/* Resizer and content */}
+          <div className="relative">
+            {/* Content - removed overflow property */}
+            <div className="relative" ref={textContainerRef}>
+              {verses.length > 0 ? (
+                verses.map((verse, index) => (
+                  <div
+                    key={`verse-row-${verse.number}`}
+                    className="flex border-b"
+                  >
+                    {/* Greek Column */}
+                    <div
+                      id={`greek-verse-${verse.number}`}
+                      className="p-4 pt-4 bg-white relative" // Relative positioning for labels
+                      style={{ width: `${splitPosition}%` }}
+                    >
+                      <div
+                        className="greek-text text-lg"
+                        style={{
+                          lineHeight: lineSpacing,
+                          wordSpacing: "0.4em",
+                        }}
+                      >
+                        {verse.words.map((word, wordIndex) => {
+                          // Format first word of verse to display verse number as superscript
+                          const displayWord =
+                            wordIndex === 0 && word.text.match(/^\[\d+\]/)
+                              ? formatVerseText(word.text)
+                              : word.text;
+
+                          return (
+                            <WordContextMenu
+                              key={word.id}
+                              word={word}
+                              onLabelChange={handleLabelChange}
+                              onStartLine={() => {}}
+                              onEndLine={() => {}}
+                              onDeleteLine={() => {}}
+                              isDrawingLine={false}
+                              hasConnectedLines={false}
+                            >
+                              <span
+                                className={`cursor-pointer hover:bg-gray-200 rounded inline-block mr-2 ${
+                                  word.parsing
+                                    ? getParsingClass(word.parsing)
+                                    : ""
+                                }`}
+                                onClick={(e) => handleWordClick(word, e)}
+                              >
+                                {displayWord}
+                              </span>
+                            </WordContextMenu>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Translation Column */}
+                    <div
+                      id={`translation-verse-${verse.number}`}
+                      className="p-4 bg-white border-l"
+                      style={{ width: `${100 - splitPosition}%` }}
+                    >
+                      <div className="text-blue-700 text-sm font-semibold mb-2">
+                        <sup>{verse.number}</sup>
+                      </div>
+                      <Textarea
+                        placeholder={`Translation for verse ${verse.number}...`}
+                        className="w-full border-0 p-0 focus-visible:ring-0 bg-transparent resize-none"
+                        style={{
+                          fontFamily: "'Times New Roman', serif",
+                        }}
+                        value={translationVerses[index] || ""}
+                        onChange={(e) => {
+                          const newVerses = [...translationVerses];
+                          newVerses[index] = e.target.value;
+                          setTranslation(newVerses.join("\n\n"));
+                          setIsSaved(false);
+                          debouncedUpdateTranslation();
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex border-b">
+                  <div
+                    className="p-4 bg-white"
+                    style={{ width: `${splitPosition}%` }}
+                  >
+                    <div className="text-gray-500 italic">
+                      No verses detected
+                    </div>
+                  </div>
+                  <div
+                    className="p-4 bg-white border-l"
+                    style={{ width: `${100 - splitPosition}%` }}
+                  >
+                    <Textarea
+                      value={translation}
+                      onChange={handleTranslationChange}
+                      placeholder="Enter your translation here..."
+                      className="w-full min-h-[300px] border-0 p-0 focus-visible:ring-0 bg-transparent resize-none"
+                      style={{ fontFamily: "'Times New Roman', serif" }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Resizer handle */}
+              <div
+                className="absolute top-0 bottom-0 w-5 bg-transparent hover:bg-gray-100 cursor-col-resize z-10 flex items-center justify-center transition-colors"
+                style={{
+                  left: `calc(${splitPosition}% - 10px)`,
+                  opacity: isDragging ? 0.8 : 0.5,
                 }}
-                value={translationVerses[index] || ''}
-                onChange={(e) => {
-                  const newVerses = [...translationVerses];
-                  newVerses[index] = e.target.value;
-                  setTranslation(newVerses.join('\n\n'));
-                  setIsSaved(false);
-                  debouncedUpdateTranslation();
-                }}
-              />
+                onMouseDown={handleMouseDown}
+              >
+                <div className="h-12 w-1 bg-gray-300 rounded"></div>
+              </div>
             </div>
           </div>
-        ))
-      ) : (
-        // When no verses are detected
-        <div className="flex border-b">
-          <div 
-            className="p-4 bg-white"
-            style={{ width: `${splitPosition}%` }}
-          >
-            <div className="text-gray-500 italic">No verses detected</div>
-          </div>
-          <div 
-            className="p-4 bg-white border-l"
-            style={{ width: `${100 - splitPosition}%` }}
-          >
-            <Textarea
-              value={translation}
-              onChange={handleTranslationChange}
-              placeholder="Enter your translation here..."
-              className="w-full min-h-[300px] border-0 p-0 focus-visible:ring-0 bg-transparent resize-none"
-              style={{ fontFamily: "'Times New Roman', serif" }}
-            />
-          </div>
+
+          {showCopiedAlert && (
+            <Alert className="m-2 py-1 bg-green-50 border-green-200">
+              <AlertDescription className="text-xs">
+                Translation copied to clipboard!
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
       )}
-      
-      {/* Lines between words */}
-      {lines.map((line) => (
-        <ConnectingLine
-          key={line.id}
-          id={line.id}
-          startWord={line.startWord.text}
-          endWord={line.endWord.text}
-          startX={line.startX}
-          startY={line.startY}
-          endX={line.endX}
-          endY={line.endY}
-          annotation={line.annotation}
-          onAnnotationChange={(annotation) =>
-            handleAnnotationChange(line.id, annotation)
-          }
-          onDeleteLine={() => {}}
-          onReverseDirection={() => {}}
-        />
-      ))}
-      
-      {/* Resizer handle */}
-      <div 
-        className="absolute top-0 bottom-0 w-5 bg-transparent hover:bg-gray-100 cursor-col-resize z-10 flex items-center justify-center transition-colors"
-        style={{ 
-          left: `calc(${splitPosition}% - 10px)`,
-          opacity: isDragging ? 0.8 : 0.5
-        }}
-        onMouseDown={handleMouseDown}
-      >
-        <div className="h-12 w-1 bg-gray-300 rounded"></div>
-      </div>
-    </div>
-    
-    {showCopiedAlert && (
-      <Alert className="m-2 py-1 bg-green-50 border-green-200">
-        <AlertDescription className="text-xs">Translation copied to clipboard!</AlertDescription>
-      </Alert>
-    )}
-  </div>
-)}
 
-    {selectedWord && (
-      <div
-        style={{
-          position: "absolute",
-          top: `${dialogPosition.top}px`,
-          left: `${dialogPosition.left}px`,
-          zIndex: 50,
-        }}
-        ref={summaryRef}
-      >
-        {summaryOpen ? (
-          <div>
-            <ParsedWordSummary word={selectedWord} />
-            <Button onClick={handleEditParsing} className="mt-2 w-full">
-              Edit Parsing
-            </Button>
-          </div>
-        ) : (
-          <ParseWordDialog
-            word={selectedWord}
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-            onParse={handleParse}
-          />
-        )}
-      </div>
-    )}
-  </div>
+      {selectedWord && (
+        <div
+          style={{
+            position: "absolute",
+            top: `${dialogPosition.top}px`,
+            left: `${dialogPosition.left}px`,
+            zIndex: 50,
+          }}
+          ref={summaryRef}
+        >
+          {summaryOpen ? (
+            <div>
+              <ParsedWordSummary word={selectedWord} />
+              <Button onClick={handleEditParsing} className="mt-2 w-full">
+                Edit Parsing
+              </Button>
+            </div>
+          ) : (
+            <ParseWordDialog
+              word={selectedWord}
+              open={dialogOpen}
+              onOpenChange={setDialogOpen}
+              onParse={handleParse}
+            />
+          )}
+        </div>
+      )}
+    </div>
   );
 }

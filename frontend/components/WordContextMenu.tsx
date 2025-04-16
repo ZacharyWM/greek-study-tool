@@ -21,29 +21,27 @@ import type { Word } from "../types/models";
 
 interface WordContextMenuProps {
   word: Word;
-  onLabelChange: (wordId: number, newLabel: string | undefined, position?: { x: number, y: number }) => void;
-  onStartLine: (word: Word, x: number, y: number) => void;
-  onEndLine: (word: Word, x: number, y: number) => void;
-  onDeleteLine: (word: Word) => void;
-  isDrawingLine: boolean;
-  hasConnectedLines: boolean;
+  onLabelChange: (
+    wordId: number,
+    newLabel: string | undefined,
+    position?: { x: number; y: number }
+  ) => void;
+  onStartLine: () => void;  // Simplified props - maintained for backwards compatibility
+  onEndLine: () => void;    // Simplified props - maintained for backwards compatibility
+  onDeleteLine: () => void; // Simplified props - maintained for backwards compatibility
+  isDrawingLine: boolean;   // Simplified props - maintained for backwards compatibility
+  hasConnectedLines: boolean; // Simplified props - maintained for backwards compatibility
   children: React.ReactNode;
 }
 
 const WordContextMenu: React.FC<WordContextMenuProps> = ({
   word,
   onLabelChange,
-  onStartLine,
-  onEndLine,
-  onDeleteLine,
-  isDrawingLine,
-  hasConnectedLines,
   children,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [labelInput, setLabelInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const wordRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,29 +76,7 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
     setIsModalOpen(false);
   };
 
-  const handleLineAction = () => {
-    if (wordRef.current) {
-      const rect = wordRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      onStartLine(word, centerX, centerY);
-    }
-  };
-
-  const handleWordClick = (e: React.MouseEvent) => {
-    if (isDrawingLine) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (wordRef.current) {
-        const rect = wordRef.current.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        onEndLine(word, centerX, centerY);
-      }
-    }
-  };
-
-  const handleLabelPositionChange = (newPosition: { x: number, y: number }) => {
+  const handleLabelPositionChange = (newPosition: { x: number; y: number }) => {
     onLabelChange(word.id, word.label, newPosition);
   };
 
@@ -138,12 +114,7 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
             className="relative inline-block"
             style={{ zIndex: 1 }} // Establish stacking context
           >
-            <div 
-              ref={wordRef}
-              className="relative" 
-              style={{ lineHeight: "normal" }}
-              onClick={handleWordClick}
-            >
+            <div className="relative" style={{ lineHeight: "normal" }}>
               {word.label && (
                 <DraggableLabel
                   text={word.label}
@@ -164,14 +135,6 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
           {word.label && (
             <ContextMenuItem onSelect={handleDeleteLabel}>
               Delete Label
-            </ContextMenuItem>
-          )}
-          <ContextMenuItem onSelect={handleLineAction}>
-            Create Word Link
-          </ContextMenuItem>
-          {hasConnectedLines && (
-            <ContextMenuItem onSelect={() => onDeleteLine(word)}>
-              Delete Word Link
             </ContextMenuItem>
           )}
         </ContextMenuContent>
