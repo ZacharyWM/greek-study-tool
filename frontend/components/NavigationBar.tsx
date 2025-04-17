@@ -36,7 +36,8 @@ export const NavigationBar: React.FC = () => {
   };
 
   // Greek text from 2 Timothy 2:15 split into two lines
-  const greekTextFirstLine = "σπούδασον σεαυτὸν δόκιμον παραστῆσαι τῷ θεῷ, ἐργάτην ἀνεπαίσχυντον,";
+  const greekTextFirstLine =
+    "σπούδασον σεαυτὸν δόκιμον παραστῆσαι τῷ θεῷ, ἐργάτην ἀνεπαίσχυντον,";
   const greekTextSecondLine = "ὀρθοτομοῦντα τὸν λόγον τῆς ἀληθείας.";
 
   return (
@@ -67,9 +68,7 @@ export const NavigationBar: React.FC = () => {
               </button>
 
               {isDropdownOpen && (
-                <div
-                  className="absolute left-0 mt-2 w-48 bg-card text-card-foreground rounded-md shadow-lg py-1 z-10 border border-border"
-                >
+                <div className="absolute left-0 mt-2 w-48 bg-card text-card-foreground rounded-md shadow-lg py-1 z-10 border border-border">
                   <a
                     href="/analysis?new=true"
                     className="block px-4 py-2 hover:bg-secondary"
@@ -89,7 +88,7 @@ export const NavigationBar: React.FC = () => {
               Greek Syntax Lab
             </div>
           </div>
-          
+
           {/* Mobile login button */}
           <div className="md:hidden">
             {isAuthenticated ? (
@@ -100,15 +99,21 @@ export const NavigationBar: React.FC = () => {
                 Logout
               </button>
             ) : (
-              <button onClick={userLogin} className="bg-accent px-3 py-1 rounded text-sm academic-button">
+              <button
+                onClick={userLogin}
+                className="bg-accent px-3 py-1 rounded text-sm academic-button"
+              >
                 Login
               </button>
             )}
           </div>
         </div>
-        
+
         {/* Center Greek Text - with two lines */}
-        <div className="my-2 md:my-0 mx-auto text-center px-4 flex-1 max-w-2xl">
+        <div
+          id="2timothy"
+          className="my-2 md:my-0 mx-auto text-center px-4 flex-1 max-w-2xl"
+        >
           <div className="text-xs text-primary-foreground/80 tracking-wider mb-1 font-small-caps">
             2 Timothy 2:15
           </div>
@@ -117,7 +122,7 @@ export const NavigationBar: React.FC = () => {
             <div>{greekTextSecondLine}</div>
           </div>
         </div>
-        
+
         {/* Right section with user auth - desktop only */}
         <div className="hidden md:flex items-center">
           {isAuthenticated ? (
@@ -131,7 +136,10 @@ export const NavigationBar: React.FC = () => {
               </button>
             </>
           ) : (
-            <button onClick={userLogin} className="bg-accent px-4 py-2 rounded academic-button">
+            <button
+              onClick={userLogin}
+              className="bg-accent px-4 py-2 rounded academic-button"
+            >
               Login
             </button>
           )}
