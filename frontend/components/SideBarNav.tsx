@@ -13,7 +13,7 @@ interface SideBarNavProps {
 function SideBarNav({ sidebar, showSidebar, sidebarRef }: SideBarNavProps) {
   return (
     <>
-      <IconContext.Provider value={{ color: "undefined" }}>
+      <IconContext.Provider value={{ color: "inherit" }}>
         <nav
           className={sidebar ? "nav-menu active" : "nav-menu"}
           ref={sidebarRef as RefObject<HTMLDivElement>}
