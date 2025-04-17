@@ -1,5 +1,3 @@
-
-// ParsedWordSummary.tsx - updated for Oxford Scholar theme
 import React from "react";
 import {
   Card,
@@ -15,11 +13,11 @@ interface ParsedWordSummaryProps {
 
 const ParsedWordSummary: React.FC<ParsedWordSummaryProps> = ({ word }) => {
   return (
-    <Card className="w-64 academic-card">
-      <CardHeader className="academic-card-header">
+    <Card className="w-64">
+      <CardHeader>
         <CardTitle className="text-lg">Word: {word.text}</CardTitle>
       </CardHeader>
-      <CardContent className="p-4">
+      <CardContent>
         <dl className="space-y-2">
           {word.lexicalForm && (
             <>
