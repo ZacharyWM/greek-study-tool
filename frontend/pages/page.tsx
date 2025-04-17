@@ -101,12 +101,22 @@ export default function Home() {
     if (isAuthenticated) {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("new") === "true") {
+        setSections([]);
+        setLines([]);
+        setInputText("");
+        setAnalysisId(0);
+        setTitle("");
+        setSelectedWord(null);
+        setDialogOpen(false);
+        setSummaryOpen(false);
+        setDrawingLine(null);
+        setDescription("");
         window.history.replaceState({}, "", "/analysis");
-      } else {
+      } else if (analysisId > 0) {
         fetchAnalysis(analysisId);
       }
     }
-  }, [isAuthenticated, analysisId]);
+  }, [isAuthenticated, analysisId, window.location.search]);
 
   const logoutWithRedirect = () =>
     logout({
