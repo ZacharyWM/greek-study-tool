@@ -2,5 +2,7 @@ node_modules
 tmp
 frontend/build
 
-.env
 server/database/books
+
+.env
+.DS_Store
