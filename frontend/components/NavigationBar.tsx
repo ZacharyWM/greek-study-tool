@@ -2,7 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { fetchUserData } from "../api/requests";
 
-export const NavigationBar: React.FC = () => {
+interface NavigationBarProps {
+  sidebar: boolean;
+  setSidebar: (value: boolean) => void;
+}
+
+export const NavigationBar: React.FC<NavigationBarProps> = ({
+  sidebar,
+  setSidebar,
+}) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const {
@@ -26,12 +34,10 @@ export const NavigationBar: React.FC = () => {
   // }
 
   useEffect(() => {
-    console.log("isAuthenticated", isAuthenticated);
     if (isAuthenticated) {
       (async () => {
         const jwt = await getAccessTokenSilently();
         const userData = await fetchUserData(jwt);
-        console.log("userData", userData);
       })();
     }
   }, [isAuthenticated]);
@@ -45,8 +51,13 @@ export const NavigationBar: React.FC = () => {
     loginWithRedirect();
   };
 
+  // TODO - probably remove dropdown
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const toggleSidebar = () => {
+    setSidebar(!sidebar);
   };
 
   return (
@@ -54,7 +65,7 @@ export const NavigationBar: React.FC = () => {
       <div className="flex items-center">
         <div className="relative mr-3">
           <button
-            onClick={toggleDropdown}
+            onClick={toggleSidebar}
             className="flex items-center focus:outline-none"
           >
             <svg
