@@ -1,115 +1,529 @@
+/* 
+ * Greek Syntax Lab - Oxford Scholar Theme
+ * 
+ * Primary Color: #002147 (Oxford Blue)
+ * Secondary Color: #F7F1E3 (Cream)
+ * Accent Color: #9F1C1C (Oxford Red)
+ */
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
-@font-face {
-  font-family: "SBLBibLit";
-  src: url("./SBLBibLit.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-
-.greek-text {
-  font-family: "SBLBibLit", serif;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
-  line-height: 1.6;
-}
-
+/* Custom Oxford Scholar Theme */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Updated color palette */
+    --background: 42 39% 98%;         /* #FDFBF7 - Cream background */
+    --foreground: 0 0% 15%;           /* #252525 - Near black text */
+    
+    --card: 0 0% 100%;                /* #FFFFFF - White card background */
+    --card-foreground: 0 0% 15%;      /* #252525 - Near black text */
+    
+    --popover: 0 0% 100%;             /* #FFFFFF - White popover background */
+    --popover-foreground: 0 0% 15%;   /* #252525 - Near black text */
+    
+    --primary: 212 100% 14%;          /* #002147 - Oxford blue */
+    --primary-foreground: 0 0% 98%;   /* #FAFAFA - White text on blue */
+    
+    --secondary: 39 55% 92%;          /* #F7F1E3 - Cream secondary */
+    --secondary-foreground: 212 100% 14%; /* #002147 - Oxford blue on cream */
+    
+    --muted: 39 30% 92%;              /* Lighter cream for muted areas */
+    --muted-foreground: 0 0% 38%;     /* #616161 - Gray text */
+    
+    --accent: 0 70% 37%;              /* #9F1C1C - Oxford red */
+    --accent-foreground: 0 0% 98%;    /* #FAFAFA - White text on red */
+    
+    --destructive: 0 70% 37%;         /* #9F1C1C - Oxford red for destructive */
+    --destructive-foreground: 0 0% 98%; /* #FAFAFA - White text */
+    
+    --border: 39 30% 74%;             /* #D1C4AC - Cream border */
+    --input: 39 30% 74%;              /* #D1C4AC - Cream input border */
+    --ring: 212 100% 14%;             /* #002147 - Oxford blue ring */
+    
+    --radius: 0.25rem;                /* Conservative border radius */
+
+    /* Success and warning colors */
+    --success: 140 60% 29%;           /* #1D7644 - Deep green */
+    --warning: 33 80% 41%;            /* #BA7414 - Amber */
+    
+    /* Chart colors for data visualization */
+    --chart-1: 212 100% 35%;          /* Oxford blue variant */
+    --chart-2: 0 70% 55%;             /* Oxford red variant */
+    --chart-3: 40 50% 70%;            /* Gold/cream */
+    --chart-4: 120 30% 40%;           /* Green */
+    --chart-5: 180 40% 50%;           /* Teal */
+    
+    /* Sidebar colors */
+    --sidebar-background: 212 100% 14%;     /* #002147 - Oxford blue */
+    --sidebar-foreground: 39 55% 92%;       /* #F7F1E3 - Cream text */
+    --sidebar-primary: 0 70% 37%;           /* #9F1C1C - Oxford red */
+    --sidebar-primary-foreground: 0 0% 98%; /* #FAFAFA - White text */
+    --sidebar-accent: 212 30% 25%;          /* Slightly lighter blue */
+    --sidebar-accent-foreground: 39 55% 92%; /* #F7F1E3 - Cream text */
+    --sidebar-border: 212 20% 20%;          /* Dark blue border */
+    --sidebar-ring: 0 70% 45%;              /* Lighter red ring */
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 212 60% 9%;         /* Dark Oxford blue background */
+    --foreground: 39 30% 92%;         /* Cream text */
+    
+    --card: 212 50% 12%;              /* Dark blue card */
+    --card-foreground: 39 30% 92%;    /* Cream text */
+    
+    --popover: 212 50% 12%;           /* Dark blue popover */
+    --popover-foreground: 39 30% 92%; /* Cream text */
+    
+    --primary: 39 55% 92%;            /* Cream primary */
+    --primary-foreground: 212 100% 14%; /* Oxford blue on cream */
+    
+    --secondary: 212 30% 20%;         /* Lighter blue secondary */
+    --secondary-foreground: 39 30% 92%; /* Cream text */
+    
+    --muted: 212 30% 17%;             /* Muted dark blue */
+    --muted-foreground: 39 30% 70%;   /* Muted cream text */
+    
+    --accent: 0 70% 37%;              /* Oxford red */
+    --accent-foreground: 39 55% 92%;  /* Cream on red */
+    
+    --destructive: 0 80% 50%;         /* Brighter red for dark mode */
+    --destructive-foreground: 0 0% 98%; /* White text */
+    
+    --border: 212 30% 25%;            /* Dark blue border */
+    --input: 212 30% 25%;             /* Dark blue input */
+    --ring: 39 55% 92%;               /* Cream ring */
+
+    /* Chart colors adjusted for dark mode */
+    --chart-1: 39 60% 85%;            /* Light cream */
+    --chart-2: 0 70% 65%;             /* Brighter red */
+    --chart-3: 40 80% 65%;            /* Brighter gold */
+    --chart-4: 130 40% 55%;           /* Brighter green */
+    --chart-5: 200 50% 60%;           /* Brighter blue */
+
+    /* Sidebar colors for dark mode */
+    --sidebar-background: 212 30% 15%;      /* Dark Oxford blue */
+    --sidebar-foreground: 39 55% 92%;       /* Cream text */
+    --sidebar-primary: 0 70% 45%;           /* Brighter Oxford red */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text */
+    --sidebar-accent: 212 20% 25%;          /* Slightly lighter blue */
+    --sidebar-accent-foreground: 39 55% 92%; /* Cream text */
+    --sidebar-border: 212 25% 30%;          /* Blue border */
+    --sidebar-ring: 0 70% 55%;              /* Lighter red ring */
   }
 }
 
+/* Base styles */
 @layer base {
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
+    font-family: 'EB Garamond', 'Georgia', serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', 'Times New Roman', serif;
+    font-weight: 600;
+    color: hsl(var(--primary));
+    letter-spacing: -0.01em;
+  }
+  
+  /* Heading sizes */
+  h1 {
+    @apply text-3xl;
+    line-height: 1.2;
+  }
+  
+  h2 {
+    @apply text-2xl;
+    line-height: 1.3;
+  }
+  
+  h3 {
+    @apply text-xl;
+    line-height: 1.4;
+  }
+  
+  /* Keep Greek text styling */
+  .greek-text {
+    font-family: "SBLBibLit", serif;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    line-height: 1.6;
+  }
+
+  /* Translation styling */
+  .translation-text {
+    font-family: 'EB Garamond', 'Georgia', serif;
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  
+  /* Button style enhancements */
+  button, 
+  .btn,
+  [type="button"],
+  [type="reset"],
+  [type="submit"] {
+    font-family: 'EB Garamond', 'Georgia', serif;
+    letter-spacing: 0.01em;
+  }
+  
+  /* Input field styling */
+  input, textarea, select {
+    font-family: 'EB Garamond', 'Georgia', serif;
   }
 }
+
+/* Component-specific styles */
+@layer components {
+  /* Navigation bar styling */
+  .nav-bar {
+    @apply bg-primary text-primary-foreground;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  /* Card styling */
+  .academic-card {
+    @apply bg-card text-card-foreground border border-border rounded-[var(--radius)];
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .academic-card-header {
+    @apply bg-primary text-primary-foreground p-3 font-semibold;
+    font-family: 'EB Garamond', 'Georgia', serif;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  
+  /* Greek and translation panels */
+  .text-panel {
+    @apply p-4 bg-card;
+  }
+  
+  /* Button variants */
+  .btn-oxford {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+    font-family: 'EB Garamond', 'Georgia', serif;
+  }
+  
+  .btn-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90;
+    font-family: 'EB Garamond', 'Georgia', serif;
+  }
+  
+  .btn-outline {
+    @apply border border-primary text-primary bg-transparent hover:bg-primary hover:text-primary-foreground;
+    font-family: 'EB Garamond', 'Georgia', serif;
+  }
+}
+
+/* Parsing styles - Enhanced for Oxford theme */
+.parsed-word {
+  position: relative;
+  display: inline-block;
+  padding: 2px;
+  margin: 1px;
+}
+
+/* Case-based colors for Articles, Nouns, Pronouns */
+.case-nominative {
+  color: #002F5E; /* Darker Oxford blue */
+}
+
+.case-genitive {
+  color: #0051A8; /* Lighter Oxford blue */
+}
+
+.case-dative {
+  color: #9F4C1C; /* Oxford amber */
+}
+
+.case-accusative {
+  color: #9F1C1C; /* Oxford red */
+}
+
+/* Verb moods - Using Oxford color palette */
+.mood-indicative {
+  color: #1D7644; /* Success green */
+}
+
+.mood-infinitive {
+  color: #ffff00; /* Yellow */
+  text-shadow: 0 0 2px #000000; /* Black outline */
+}
+
+.mood-subjunctive {
+  color: #65498B; /* Purple */
+}
+
+.mood-imperative {
+  color: #9F1C1C; /* Oxford red */
+  text-shadow: 0 0 2px #f2ff00; /* Yellow outline */
+}
+
+/* Participles */
+.mood-participle {
+  color: #fb00ff; /* Pink */
+}
+
+/* Case-specific styling for participles when case is specified */
+.mood-participle.case-nominative {
+  text-decoration: wavy underline #002F5E; /* Dark Oxford blue */
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.mood-participle.case-genitive {
+  text-decoration: wavy underline #0051A8; /* Lighter Oxford blue */
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.mood-participle.case-dative {
+  text-decoration: wavy underline #9F4C1C; /* Oxford amber */
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.mood-participle.case-accusative {
+  text-decoration: wavy underline #9F1C1C; /* Oxford red */
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* Adverbs */
+.adverb {
+  text-decoration: underline;
+  text-decoration-style: double;
+  text-decoration-color: #9F1C1C; /* Oxford red */
+}
+
+/* Adjectives */
+.adjective {
+  border-style: dotted;
+  border-width: 2px;
+  border-radius: 4px;
+}
+
+.adjective.case-nominative {
+  border-color: #002F5E; /* Dark Oxford blue */
+}
+
+.adjective.case-genitive {
+  border-color: #0051A8; /* Lighter Oxford blue */
+}
+
+.adjective.case-dative {
+  border-color: #9F4C1C; /* Oxford amber */
+}
+
+.adjective.case-accusative {
+  border-color: #9F1C1C; /* Oxford red */
+}
+
+/* Prepositions */
+.preposition {
+  text-decoration: wavy underline;
+  text-decoration-color: #1D7644; /* Success green */
+}
+
+/* Conjunctions */
+.conjunction {
+  position: relative;
+}
+
+.conjunction::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid #000000; /* Black */
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Word label styles - Enhanced for Oxford theme */
+.word-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(-100%);
+  font-size: 0.75rem;
+  color: #616161;
+  white-space: nowrap;
+  font-family: 'EB Garamond', 'Georgia', serif;
+}
+
+/* 
+ * Translation and alignment fixes
+ */
+
+/* Header alignment fixes */
+.bg-blue-700.text-white.p-2,
+.bg-blue-700.text-white.p-2.flex {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  background-color: hsl(var(--primary));
+}
+
+.bg-blue-700 .font-bold,
+.bg-blue-700 span.font-bold {
+  padding-left: 0.5rem;
+  line-height: 1.2;
+  font-family: 'EB Garamond', 'Georgia', serif;
+  font-weight: 600;
+}
+
+/* Content alignment fixes */
+[id^="greek-verse-"],
+.p-4.bg-white.relative,
+.p-4.bg-white.border-l {
+  padding: 1rem;
+  box-sizing: border-box;
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
+/* Ensure rows have consistent heights */
+.flex.border-b {
+  min-height: 80px;
+  display: flex;
+  align-items: stretch;
+  border-color: hsl(var(--border));
+}
+
+/* Ensure translation textareas align properly */
+.p-4.bg-white.border-l textarea {
+  margin-top: 0.5rem;
+  min-height: 60px;
+  height: calc(100% - 0.5rem);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  font-family: 'EB Garamond', 'Georgia', serif;
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
+/* Verse number styling */
+sup.text-blue-700.font-semibold.mr-1 {
+  display: inline-block;
+  font-size: 0.75rem;
+  vertical-align: super;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--accent));
+  font-family: 'EB Garamond', 'Georgia', serif;
+}
+
+/* Dialog enhancements */
+.dialog-card, 
+[role="dialog"] {
+  @apply bg-card border border-border rounded-[var(--radius)];
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Sidebar-specific styles */
+.sidebar-transition {
+  transition: width 0.3s ease;
+}
+
+.sidebar-shrink {
+  width: 4rem;
+}
+
+.sidebar-expand {
+  width: 18rem;
+}
+
+/* Book section styles */
+.book-section {
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.book-section.collapsed {
+  max-height: 2.5rem;
+}
+
+.book-section.expanded {
+  max-height: 500px;
+}
+
+/* Improved scrollbar for sidebar */
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: hsl(var(--sidebar-background));
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--sidebar-border));
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--sidebar-accent-foreground));
+}
+
+/* Navigation styling */
+.navigation-bar {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 1rem;
+  font-family: 'EB Garamond', 'Georgia', serif;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navigation-title {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Button styling */
+.academic-button {
+  font-family: 'EB Garamond', 'Georgia', serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Greek text in navigation */
+.nav-greek-text {
+  font-size: 3.0rem; /* Adjust size as needed */
+  line-height: 2.0; /* Optional: Adjust line height for better readability */
+}
+
+/* Make sure the UI remains clean on smaller screens */
+@media (max-width: 768px) {
+  h1 {
+    @apply text-2xl;
+  }
+  
+  h2 {
+    @apply text-xl;
+  }
+  
+  h3 {
+    @apply text-lg;
+  }
+}
+
 
 /* Side Bar Nav styles */
 /* @import url("https://fonts.googleapis.com/css2?family=Lato&display=swap"); */
@@ -210,141 +624,3 @@ body {
 span {
   margin-left: 16px;
 }
-
-/* parsing styles */
-/* Base styles for parsed words */
-.parsed-word {
-  position: relative;
-  display: inline-block;
-  padding: 2px;
-  margin: 1px;
-}
-
-/* Case-based colors for Articles, Nouns, Pronouns */
-.case-nominative {
-  color: #00008b; /* Dark Blue */
-}
-
-.case-genitive {
-  color: #1e90ff; /* Light Blue */
-}
-
-.case-dative {
-  color: #ffa500; /* Orange */
-}
-
-.case-accusative {
-  color: #ff0000; /* Red */
-}
-
-/* Verb moods */
-.mood-indicative {
-  color: #008000; /* Green */
-}
-
-.mood-infinitive {
-  color: #ffd700; /* Yellow */
-}
-
-.mood-subjunctive {
-  color: #800080; /* Purple */
-}
-
-.mood-imperative {
-  color: #ff0000; /* Red */
-  text-shadow: 0 0 2px #ffd700; /* Yellow outline */
-}
-
-/* Participles */
-.participle {
-  color: #ff69b4; /* Pink */
-}
-
-.participle.case-nominative {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: #00008b; /* Dark Blue */
-}
-
-.participle.case-genitive {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: #1e90ff; /* Light Blue */
-}
-
-.participle.case-dative {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: #ffa500; /* Orange */
-}
-
-.participle.case-accusative {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: #ff0000; /* Red */
-}
-
-/* Adverbs */
-.adverb {
-  text-decoration: underline;
-  text-decoration-style: double;
-  text-decoration-color: #ff0000;
-}
-
-/* Adjectives */
-.adjective {
-  border-style: dotted;
-  border-width: 2px;
-  border-radius: 4px;
-}
-
-.adjective.case-nominative {
-  border-color: #00008b; /* Dark Blue */
-}
-
-.adjective.case-genitive {
-  border-color: #1e90ff; /* Light Blue */
-}
-
-.adjective.case-dative {
-  border-color: #ffa500; /* Orange */
-}
-
-.adjective.case-accusative {
-  border-color: #ff0000; /* Red */
-}
-
-/* Prepositions */
-.preposition {
-  text-decoration: wavy underline;
-  text-decoration-color: #008080; /* Teal */
-}
-
-/* Conjunctions */
-.conjunction {
-  position: relative;
-}
-
-.conjunction::before {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border: 2px solid #808080; /* Gray */
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-/* Word label styles */
-.word-label {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: translateY(-100%);
-  font-size: 0.75rem;
-  color: #6b7280;
-  white-space: nowrap;
-}
-
