@@ -237,19 +237,19 @@
 
 /* Case-based colors for Articles, Nouns, Pronouns */
 .case-nominative {
-  color: #002F5E; /* Darker Oxford blue */
+  color: #0008ff; /* Blue */
 }
 
 .case-genitive {
-  color: #0051A8; /* Lighter Oxford blue */
+  color: #00af89; /* Seafoam */
 }
 
 .case-dative {
-  color: #9F4C1C; /* Oxford amber */
+  color: #df912b; /* orange */
 }
 
 .case-accusative {
-  color: #9F1C1C; /* Oxford red */
+  color: #ff0000; /* Red */
 }
 
 /* Verb moods - Using Oxford color palette */
@@ -264,10 +264,11 @@
 
 .mood-subjunctive {
   color: #65498B; /* Purple */
+  text-shadow: 0 0 2px #f2ff00; /* Yellow outline */
 }
 
 .mood-imperative {
-  color: #9F1C1C; /* Oxford red */
+  color: #ff0000; /* Oxford red */
   text-shadow: 0 0 2px #f2ff00; /* Yellow outline */
 }
 
@@ -278,25 +279,25 @@
 
 /* Case-specific styling for participles when case is specified */
 .mood-participle.case-nominative {
-  text-decoration: wavy underline #002F5E; /* Dark Oxford blue */
+  text-decoration: wavy underline #0008ff; /* Blue */
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
 
 .mood-participle.case-genitive {
-  text-decoration: wavy underline #0051A8; /* Lighter Oxford blue */
+  text-decoration: wavy underline #00af89; /* Seafoam */
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
 
 .mood-participle.case-dative {
-  text-decoration: wavy underline #9F4C1C; /* Oxford amber */
+  text-decoration: wavy underline #df912b; /* orange */
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
 
 .mood-participle.case-accusative {
-  text-decoration: wavy underline #9F1C1C; /* Oxford red */
+  text-decoration: wavy underline #ff0000; /* Red */
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
@@ -305,7 +306,7 @@
 .adverb {
   text-decoration: underline;
   text-decoration-style: double;
-  text-decoration-color: #9F1C1C; /* Oxford red */
+  text-decoration-color: #1D7644; /* Success green */
 }
 
 /* Adjectives */
@@ -316,25 +317,37 @@
 }
 
 .adjective.case-nominative {
-  border-color: #002F5E; /* Dark Oxford blue */
+  border-color: #0008ff; /* Blue */
 }
 
 .adjective.case-genitive {
-  border-color: #0051A8; /* Lighter Oxford blue */
+  border-color: #00af89; /* Seafoam */
 }
 
 .adjective.case-dative {
-  border-color: #9F4C1C; /* Oxford amber */
+  border-color: #df912b; /* orange */
 }
 
 .adjective.case-accusative {
-  border-color: #9F1C1C; /* Oxford red */
+  border-color: #ff0000; /* Red */
 }
 
 /* Prepositions */
 .preposition {
-  text-decoration: wavy underline;
-  text-decoration-color: #1D7644; /* Success green */
+  text-decoration: none;
+  position: relative;
+}
+
+.preposition::before {
+  content: "[";
+  position: absolute;
+  left: -0.3em;
+}
+
+.preposition::after {
+  content: "]";
+  position: absolute;
+  right: -0.3em;
 }
 
 /* Conjunctions */
