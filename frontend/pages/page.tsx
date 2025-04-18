@@ -330,51 +330,9 @@ export default function Home() {
     }
   };
 
-  const handleStartLine = (word: Word, x: number, y: number) => {
-    if (textContainerRef.current) {
-      const containerRect = textContainerRef.current.getBoundingClientRect();
-      setDrawingLine({
-        startWord: word,
-        startX: x - containerRect.left,
-        startY: y - containerRect.top,
-      });
-    }
-  };
-
-  const handleEndLine = (word: Word, x: number, y: number) => {
-    if (
-      drawingLine &&
-      drawingLine.startWord.id !== word.id &&
-      textContainerRef.current
-    ) {
-      const containerRect = textContainerRef.current.getBoundingClientRect();
-      setLines((prevLines) => [
-        ...prevLines,
-        {
-          id: Date.now(),
-          startWord: drawingLine.startWord,
-          endWord: word,
-          startX: drawingLine.startX,
-          startY: drawingLine.startY,
-          endX: x - containerRect.left,
-          endY: y - containerRect.top,
-        },
-      ]);
-      setDrawingLine(null);
-    }
-  };
-
   const hasConnectedLines = (word: Word) => {
     return lines.some(
       (line) => line.startWord.id === word.id || line.endWord.id === word.id
-    );
-  };
-
-  const handleDeleteLine = (word: Word) => {
-    setLines((prevLines) =>
-      prevLines.filter(
-        (line) => line.startWord.id !== word.id && line.endWord.id !== word.id
-      )
     );
   };
 
@@ -510,15 +468,7 @@ export default function Home() {
                 {index > 0 && word.text.startsWith("[") && (
                   <div className="h-4" />
                 )}
-                <WordContextMenu
-                  word={word}
-                  onLabelChange={handleLabelChange}
-                  onStartLine={handleStartLine}
-                  onEndLine={handleEndLine}
-                  onDeleteLine={handleDeleteLine}
-                  isDrawingLine={!!drawingLine}
-                  hasConnectedLines={hasConnectedLines(word)}
-                >
+                <WordContextMenu word={word} onLabelChange={handleLabelChange}>
                   <span
                     className={`cursor-pointer hover:bg-gray-200 rounded inline-block ${
                       word.parsing ? getParsingClass(word.parsing) : ""
