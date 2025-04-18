@@ -11,11 +11,25 @@ import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { Save, Copy, Download } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
-import type { Section, Word, WordParsing } from "../types/models";
+import type {
+  Section,
+  Word,
+  WordParsing,
+  Book,
+  Chapter,
+  Verse,
+} from "../types/models";
 import debounce from "lodash/debounce";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "../components/ui/select";
+import { get } from "http";
 
 const TranslationToggle: React.FC<{
   isEnabled: boolean;
@@ -46,6 +60,19 @@ export default function Home() {
   const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
   const [lineSpacing, setLineSpacing] = useState(3);
   const [analysisId, setAnalysisId] = useState<number>(parseInt(id || "0"));
+
+  // Books, Chapters, Verses
+  const [books, setBooks] = useState<Book[]>([]);
+  const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [selectedChapterId, setSelectedChapterId] = useState<number | null>(
+    null
+  );
+  const [verses, setVerses] = useState<Verse[]>([]);
+  const [selectedVerseStart, setSelectedVerseStart] = useState<number | null>(
+    null
+  );
+  const [selectedVerseEnd, setSelectedVerseEnd] = useState<number | null>(null);
 
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
@@ -113,6 +140,99 @@ export default function Home() {
     }
 
     return verses;
+  };
+
+  const fetchBooks = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch("/api/books", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBooks(data);
+      } else {
+        console.error("Failed to fetch books:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    }
+  };
+
+  const fetchChapters = async (bookId: number) => {
+    if (!isAuthenticated) return;
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`/api/books/${bookId}/chapters`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setChapters(data);
+      } else {
+        console.error("Failed to fetch chapters:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error fetching chapters:", error);
+    }
+  };
+
+  const fetchVerses = async (chapterId: number) => {
+    if (!isAuthenticated) return;
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`/api/chapters/${chapterId}/verses`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setVerses(data);
+      } else {
+        console.error("Failed to fetch verses:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error fetching verses:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchBooks();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated && selectedBookId) {
+      fetchChapters(selectedBookId);
+    }
+  }, [isAuthenticated, selectedBookId]);
+
+  useEffect(() => {
+    if (isAuthenticated && selectedChapterId) {
+      fetchVerses(selectedChapterId);
+    }
+  }, [isAuthenticated, selectedChapterId]);
+
+  const getBookTitle = (bookId: number) => {
+    const book = books.find((b) => b.id === bookId);
+    return book ? book.title : "";
+  };
+
+  const getChapterNumber = (chapterId: number) => {
+    const chapter = chapters.find((c) => c.id === chapterId);
+    return chapter ? chapter.number : "";
+  };
+
+  const getVerseNumber = (verseId: number) => {
+    const verse = verses.find((v) => v.id === verseId);
+    return verse ? verse.number : "";
   };
 
   const fetchAnalysis = async (id: number) => {
@@ -620,7 +740,7 @@ export default function Home() {
   };
 
   // Get verses from the first section
-  const verses = sections.length > 0 ? extractVerses(sections[0]) : [];
+  const sectionVerses = sections.length > 0 ? extractVerses(sections[0]) : [];
 
   // Split translation into verses based on empty lines
   const translationVerses = translation.split(/\n\n+/);
@@ -684,7 +804,86 @@ export default function Home() {
             </div>
           )}
 
-          <Button onClick={clearAllData} variant="secondary">
+          {/* Dropdown Selectors */}
+          <div className="flex items-center gap-4">
+            <Select onValueChange={(value) => setSelectedBookId(Number(value))}>
+              <SelectTrigger className="w-32">
+                <span>
+                  {selectedBookId
+                    ? `${getBookTitle(selectedBookId)}`
+                    : "Select Book"}
+                </span>
+              </SelectTrigger>
+              <SelectContent>
+                {books.map((book) => (
+                  <SelectItem key={book.id} value={book.id.toString()}>
+                    {book.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              onValueChange={(value) => setSelectedChapterId(Number(value))}
+            >
+              <SelectTrigger className="w-32">
+                <span>
+                  {selectedChapterId
+                    ? `Chapter ${getChapterNumber(selectedChapterId)}`
+                    : "Select Chapter"}
+                </span>
+              </SelectTrigger>
+              <SelectContent>
+                {chapters.map((chapter) => (
+                  <SelectItem key={chapter.id} value={chapter.id.toString()}>
+                    {chapter.number}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              onValueChange={(value) => setSelectedVerseStart(Number(value))}
+            >
+              <SelectTrigger className="w-32">
+                <span>
+                  {selectedVerseStart
+                    ? `${getVerseNumber(selectedVerseStart)}`
+                    : "Verse Start"}
+                </span>
+              </SelectTrigger>
+              <SelectContent>
+                {verses.map((verse) => (
+                  <SelectItem key={verse.id} value={verse.id.toString()}>
+                    {verse.number}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            -
+            <Select
+              onValueChange={(value) => setSelectedVerseEnd(Number(value))}
+            >
+              <SelectTrigger className="w-32">
+                <span>
+                  {selectedVerseEnd
+                    ? `${getVerseNumber(selectedVerseEnd)}`
+                    : "Verse End"}
+                </span>
+              </SelectTrigger>
+              <SelectContent>
+                {verses.map((verse) => (
+                  <SelectItem key={verse.id} value={verse.id.toString()}>
+                    {verse.number}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            onClick={clearAllData}
+            variant="secondary"
+            className="ml-auto"
+          >
             Clear
           </Button>
         </div>
@@ -695,7 +894,7 @@ export default function Home() {
           <Textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Paste your Greek text here..."
+            placeholder="Select your text or paste it here..."
             className="w-full min-h-[100px] greek-text"
           />
           <Button onClick={handleTextSubmit} className="mt-2">
@@ -800,8 +999,8 @@ export default function Home() {
           <div className="relative">
             {/* Content - removed overflow property */}
             <div className="relative" ref={textContainerRef}>
-              {verses.length > 0 ? (
-                verses.map((verse, index) => (
+              {sectionVerses.length > 0 ? (
+                sectionVerses.map((verse, index) => (
                   <div
                     key={`verse-row-${verse.number}`}
                     className="flex border-b"
