@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -7,7 +5,6 @@ import { Textarea } from "../components/ui/textarea";
 import ParseWordDialog from "../components/ParseWordDialog";
 import WordContextMenu from "../components/WordContextMenu";
 import ParsedWordSummary from "../components/ParsedWordSummary";
-import ConnectingLine from "../components/ConnectingLine";
 import { getParsingClass } from "../lib/parsing-styles";
 import { Slider } from "../components/ui/slider";
 import { Label } from "../components/ui/label";
@@ -534,19 +531,6 @@ export default function Home() {
               </React.Fragment>
             )) || "No text submitted yet."}
           </div>
-          {lines.map((line) => (
-            <ConnectingLine
-              key={line.id}
-              startX={line.startX}
-              startY={line.startY}
-              endX={line.endX}
-              endY={line.endY}
-              annotation={line.annotation}
-              onAnnotationChange={(annotation) =>
-                handleAnnotationChange(line.id, annotation)
-              }
-            />
-          ))}
         </div>
       )}
 

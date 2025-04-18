@@ -153,14 +153,6 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
               Delete Label
             </ContextMenuItem>
           )}
-          <ContextMenuItem onSelect={handleLineAction}>
-            Create Word Link
-          </ContextMenuItem>
-          {hasConnectedLines && (
-            <ContextMenuItem onSelect={() => onDeleteLine(word)}>
-              Delete Word Link
-            </ContextMenuItem>
-          )}
         </ContextMenuContent>
       </ContextMenu>
     </>
