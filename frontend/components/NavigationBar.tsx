@@ -22,17 +22,6 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
     getAccessTokenSilently,
   } = useAuth0();
 
-  // if (isLoading) {
-  //   return (
-  //     <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
-  //       <div className="text-lg font-bold">Greek Bible Study</div>
-  //       <div className="flex items-center">
-  //         <span>Loading...</span>
-  //       </div>
-  //     </nav>
-  //   );
-  // }
-
   useEffect(() => {
     if (isAuthenticated) {
       (async () => {
@@ -51,14 +40,14 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
     loginWithRedirect();
   };
 
-  // TODO - probably remove dropdown
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
   const toggleSidebar = () => {
     setSidebar(!sidebar);
   };
+
+  // Greek text from 2 Timothy 2:15 split into two lines
+  const greekTextFirstLine =
+    "σπούδασον σεαυτὸν δόκιμον παραστῆσαι τῷ θεῷ, ἐργάτην ἀνεπαίσχυντον,";
+  const greekTextSecondLine = "ὀρθοτομοῦντα τὸν λόγον τῆς ἀληθείας.";
 
   return (
     <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
@@ -107,6 +96,16 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
           )}
         </div>
         <div className="text-lg font-bold">Greek Bible Study</div>
+      </div>
+      {/* Center Greek Text - with two lines */}
+      <div className="my-2 md:my-0 mx-auto text-center px-4 flex-1 max-w-2xl">
+        <div className="text-xs text-primary-foreground/80 tracking-wider mb-1 font-small-caps">
+          2 Timothy 2:15
+        </div>
+        <div className="greek-text nav-greek-text text-sm md:text-base leading-relaxed">
+          <div>{greekTextFirstLine}</div>
+          <div>{greekTextSecondLine}</div>
+        </div>
       </div>
       <div className="flex items-center">
         {isAuthenticated ? (

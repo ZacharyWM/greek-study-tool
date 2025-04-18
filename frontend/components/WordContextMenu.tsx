@@ -15,34 +15,29 @@ import {
   DialogTitle,
   DialogFooter,
 } from "../components/ui/dialog";
+import DraggableLabel from "./DraggableLabel";
 
 import type { Word } from "../types/models";
 
 interface WordContextMenuProps {
   word: Word;
-  onLabelChange: (wordId: number, newLabel: string | undefined) => void;
-  onStartLine: (word: Word, x: number, y: number) => void;
-  onEndLine: (word: Word, x: number, y: number) => void;
-  onDeleteLine: (word: Word) => void;
-  isDrawingLine: boolean;
-  hasConnectedLines: boolean;
+  onLabelChange: (
+    wordId: number,
+    newLabel: string | undefined,
+    position?: { x: number; y: number }
+  ) => void;
   children: React.ReactNode;
 }
 
 const WordContextMenu: React.FC<WordContextMenuProps> = ({
   word,
   onLabelChange,
-  onStartLine,
-  onEndLine,
-  onDeleteLine,
-  isDrawingLine,
-  hasConnectedLines,
   children,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [labelInput, setLabelInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const wordRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isModalOpen && inputRef.current) {
@@ -72,30 +67,16 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
   };
 
   const saveLabelChanges = () => {
-    onLabelChange(word.id, labelInput);
+    onLabelChange(word.id, labelInput, word.labelPosition);
     setIsModalOpen(false);
   };
 
-  const handleLineAction = () => {
-    if (wordRef.current) {
-      const rect = wordRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      onStartLine(word, centerX, centerY);
-    }
+  const handleLabelPositionChange = (newPosition: { x: number; y: number }) => {
+    onLabelChange(word.id, word.label, newPosition);
   };
 
-  const handleWordClick = (e: React.MouseEvent) => {
-    if (isDrawingLine) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (wordRef.current) {
-        const rect = wordRef.current.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        onEndLine(word, centerX, centerY);
-      }
-    }
+  const handleLabelTextChange = (newText: string) => {
+    onLabelChange(word.id, newText, word.labelPosition);
   };
 
   return (
@@ -124,21 +105,19 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
       <ContextMenu>
         <ContextMenuTrigger>
           <div
-            ref={wordRef}
+            ref={containerRef}
             className="relative inline-block"
-            onClick={handleWordClick}
+            style={{ zIndex: 1 }} // Establish stacking context
           >
             <div className="relative" style={{ lineHeight: "normal" }}>
               {word.label && (
-                <span
-                  className="absolute left-1/2 transform -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-white/90 px-0.5"
-                  style={{
-                    top: "-1.2em",
-                    lineHeight: "1",
-                  }}
-                >
-                  {word.label}
-                </span>
+                <DraggableLabel
+                  text={word.label}
+                  initialPosition={word.labelPosition || { x: 0, y: -20 }}
+                  onPositionChange={handleLabelPositionChange}
+                  onTextChange={handleLabelTextChange}
+                  maxWidth={250}
+                />
               )}
               {children}
             </div>
@@ -151,14 +130,6 @@ const WordContextMenu: React.FC<WordContextMenuProps> = ({
           {word.label && (
             <ContextMenuItem onSelect={handleDeleteLabel}>
               Delete Label
-            </ContextMenuItem>
-          )}
-          <ContextMenuItem onSelect={handleLineAction}>
-            Create Word Link
-          </ContextMenuItem>
-          {hasConnectedLines && (
-            <ContextMenuItem onSelect={() => onDeleteLine(word)}>
-              Delete Word Link
             </ContextMenuItem>
           )}
         </ContextMenuContent>
