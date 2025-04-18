@@ -14,12 +14,18 @@ export function getParsingClass(parsing: WordParsing): string {
 
     case "verb":
       if (parsing.mood) {
-        classes.push(`mood-${parsing.mood.toLowerCase()}`);
+        const moodLower = parsing.mood.toLowerCase();
+        classes.push(`mood-${moodLower}`);
+
+        // If it's a participle, also add the case class for combined styling
+        if (moodLower === "participle" && parsing.case) {
+          classes.push(`case-${parsing.case.toLowerCase()}`);
+        }
       }
       break;
 
-    case "participle":
-      classes.push("participle");
+    case "participle": // Handle participle as a separate part of speech
+      classes.push("mood-participle");
       if (parsing.case) {
         classes.push(`case-${parsing.case.toLowerCase()}`);
       }
