@@ -98,7 +98,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
         <div className="text-lg font-bold">Greek Bible Study</div>
       </div>
       {/* Center Greek Text - with two lines */}
-      <div className="my-2 md:my-0 mx-auto text-center px-4 flex-1 max-w-2xl">
+      <div className="hidden lg:block my-2 md:my-0 mx-auto text-center px-4 flex-1 max-w-2xl">
         <div className="text-xs text-primary-foreground/80 tracking-wider mb-1 font-small-caps">
           2 Timothy 2:15
         </div>
