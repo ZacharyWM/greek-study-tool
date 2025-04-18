@@ -16,7 +16,7 @@ export function getParsingClass(parsing: WordParsing): string {
       if (parsing.mood) {
         const moodLower = parsing.mood.toLowerCase();
         classes.push(`mood-${moodLower}`);
-        
+
         // If it's a participle, also add the case class for combined styling
         if (moodLower === "participle" && parsing.case) {
           classes.push(`case-${parsing.case.toLowerCase()}`);
