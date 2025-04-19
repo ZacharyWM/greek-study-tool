@@ -817,6 +817,15 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4">
+          {sections.length === 0 && (
+            <Button
+              onClick={() => setIsTextLookupModalOpen(true)}
+              variant="secondary"
+            >
+              Text Lookup
+            </Button>
+          )}
+
           {/* Layout Options */}
           {showTranslation && (
             <div className="flex items-center gap-2">
@@ -850,16 +859,6 @@ export default function Home() {
                 </button>
               </div>
             </div>
-          )}
-
-          {sections.length === 0 && (
-            <Button
-              onClick={() => setIsTextLookupModalOpen(true)}
-              variant="secondary"
-              className="ml-auto"
-            >
-              Text Lookup
-            </Button>
           )}
 
           <Button
