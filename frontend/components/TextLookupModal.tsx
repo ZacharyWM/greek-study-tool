@@ -18,7 +18,8 @@ interface TextLookupModalProps {
   verses: Verse[];
   selectedBookId: number | null;
   selectedChapterId: number | null;
-  selectVerseIds: [number | null, number | null];
+  selectedVerseIdStart: number | null;
+  selectedVerseIdEnd: number | null;
   onBookSelect: (bookId: number) => void;
   onChapterSelect: (chapterId: number) => void;
   onVerseStartSelect: (verseId: number) => void;
@@ -34,13 +35,20 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
   verses,
   selectedBookId,
   selectedChapterId,
-  selectVerseIds,
+  selectedVerseIdStart,
+  selectedVerseIdEnd,
   onBookSelect,
   onChapterSelect,
   onVerseStartSelect,
   onVerseEndSelect,
   onLookupText,
 }) => {
+  const isLookupDisabled =
+    !selectedBookId ||
+    !selectedChapterId ||
+    !selectedVerseIdStart ||
+    !selectedVerseIdEnd;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -52,6 +60,7 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
             <Select
               value={selectedBookId?.toString()}
               onValueChange={(value) => onBookSelect(Number(value))}
+              disabled={books.length === 0}
             >
               <SelectTrigger className="w-full">
                 <span>
@@ -73,6 +82,7 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
             <Select
               value={selectedChapterId?.toString()}
               onValueChange={(value) => onChapterSelect(Number(value))}
+              disabled={chapters.length === 0}
             >
               <SelectTrigger className="w-full">
                 <span>
@@ -96,15 +106,17 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
 
             <div className="flex gap-4 items-center">
               <Select
-                value={selectVerseIds[0]?.toString()}
+                value={selectedVerseIdStart?.toString()}
                 onValueChange={(value) => onVerseStartSelect(Number(value))}
+                disabled={verses.length === 0}
               >
                 <SelectTrigger className="w-full">
                   <span>
-                    {selectVerseIds[0]
+                    {selectedVerseIdStart
                       ? `Verse ${
-                          verses.find((verse) => verse.id === selectVerseIds[0])
-                            ?.number || selectVerseIds[0]
+                          verses.find(
+                            (verse) => verse.id === selectedVerseIdStart
+                          )?.number || selectedVerseIdStart
                         }`
                       : "Verse Start"}
                   </span>
@@ -121,15 +133,17 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
               <span>to</span>
 
               <Select
-                value={selectVerseIds[1]?.toString()}
+                value={selectedVerseIdEnd?.toString()}
                 onValueChange={(value) => onVerseEndSelect(Number(value))}
+                disabled={verses.length === 0}
               >
                 <SelectTrigger className="w-full">
                   <span>
-                    {selectVerseIds[1]
+                    {selectedVerseIdEnd
                       ? `Verse ${
-                          verses.find((verse) => verse.id === selectVerseIds[1])
-                            ?.number || selectVerseIds[1]
+                          verses.find(
+                            (verse) => verse.id === selectedVerseIdEnd
+                          )?.number || selectedVerseIdEnd
                         }`
                       : "Verse End"}
                   </span>
@@ -149,7 +163,9 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
           <Button onClick={() => onOpenChange(false)} variant="outline">
             Cancel
           </Button>
-          <Button onClick={onLookupText}>Lookup</Button>
+          <Button onClick={onLookupText} disabled={isLookupDisabled}>
+            Lookup
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

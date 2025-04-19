@@ -70,10 +70,12 @@ export default function Home() {
     null
   );
   const [verses, setVerses] = useState<Verse[]>([]);
-  const [selectedVerseStart, setSelectedVerseStart] = useState<number | null>(
+  const [selectedVerseIdStart, setSelectedVerseIdStart] = useState<
+    number | null
+  >(null);
+  const [selectedVerseIdEnd, setSelectedVerseIdEnd] = useState<number | null>(
     null
   );
-  const [selectedVerseEnd, setSelectedVerseEnd] = useState<number | null>(null);
 
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
@@ -208,7 +210,7 @@ export default function Home() {
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(
-        `/api/verses/words?startId=${selectedVerseStart}&endId=${selectedVerseEnd}`,
+        `/api/verses/words?startId=${selectedVerseIdStart}&endId=${selectedVerseIdEnd}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -254,8 +256,8 @@ export default function Home() {
 
   useEffect(() => {
     if (!verses || verses.length === 0) {
-      setSelectedVerseStart(null);
-      setSelectedVerseEnd(null);
+      setSelectedVerseIdStart(null);
+      setSelectedVerseIdEnd(null);
       return;
     }
 
@@ -268,8 +270,8 @@ export default function Home() {
       1
     );
 
-    setSelectedVerseStart(minVerseId);
-    setSelectedVerseEnd(maxVerseId);
+    setSelectedVerseIdStart(minVerseId);
+    setSelectedVerseIdEnd(maxVerseId);
   }, [verses]);
 
   const getBookTitle = (bookId: number) => {
@@ -799,20 +801,9 @@ export default function Home() {
 
   // Add state for the text lookup modal
   const [isTextLookupModalOpen, setIsTextLookupModalOpen] = useState(false);
-  const [selectVerseIds, setSelectVerseIds] = useState<
-    [number | null, number | null]
-  >([null, null]);
-
-  const handleVerseStartSelect = (verseId: number) => {
-    setSelectVerseIds([verseId, selectVerseIds[1]]);
-  };
-
-  const handleVerseEndSelect = (verseId: number) => {
-    setSelectVerseIds([selectVerseIds[0], verseId]);
-  };
 
   const handleLookupText = () => {
-    if (selectedVerseStart && selectedVerseEnd) {
+    if (selectedVerseIdStart && selectedVerseIdEnd) {
       fetchVersesWithWords();
       setIsTextLookupModalOpen(false);
     }
@@ -1166,11 +1157,12 @@ export default function Home() {
         verses={verses}
         selectedBookId={selectedBookId}
         selectedChapterId={selectedChapterId}
-        selectVerseIds={[selectedVerseStart, selectedVerseEnd]}
         onBookSelect={(bookId) => setSelectedBookId(bookId)}
         onChapterSelect={(chapterId) => setSelectedChapterId(chapterId)}
-        onVerseStartSelect={(verseId) => setSelectedVerseStart(verseId)}
-        onVerseEndSelect={(verseId) => setSelectedVerseEnd(verseId)}
+        onVerseStartSelect={(verseId) => setSelectedVerseIdStart(verseId)}
+        onVerseEndSelect={(verseId) => setSelectedVerseIdEnd(verseId)}
+        selectedVerseIdStart={selectedVerseIdStart}
+        selectedVerseIdEnd={selectedVerseIdEnd}
         onLookupText={() => {
           fetchVersesWithWords();
           setIsTextLookupModalOpen(false);
