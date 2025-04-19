@@ -30,6 +30,7 @@ import {
   SelectItem,
 } from "../components/ui/select";
 import { get } from "http";
+import TextLookupModal from "../components/TextLookupModal";
 
 const TranslationToggle: React.FC<{
   isEnabled: boolean;
@@ -199,6 +200,32 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Error fetching verses:", error);
+    }
+  };
+
+  const fetchVersesWithWords = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(
+        `/api/verses/words?startId=${selectedVerseStart}&endId=${selectedVerseEnd}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setVerses(data);
+      } else {
+        console.error(
+          "Failed to fetch verses with words:",
+          await response.text()
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching verses with words:", error);
     }
   };
 
@@ -745,6 +772,27 @@ export default function Home() {
   // Split translation into verses based on empty lines
   const translationVerses = translation.split(/\n\n+/);
 
+  // Add state for the text lookup modal
+  const [isTextLookupModalOpen, setIsTextLookupModalOpen] = useState(false);
+  const [selectVerseIds, setSelectVerseIds] = useState<
+    [number | null, number | null]
+  >([null, null]);
+
+  const handleVerseStartSelect = (verseId: number) => {
+    setSelectVerseIds([verseId, selectVerseIds[1]]);
+  };
+
+  const handleVerseEndSelect = (verseId: number) => {
+    setSelectVerseIds([selectVerseIds[0], verseId]);
+  };
+
+  const handleLookupText = () => {
+    if (selectedVerseStart && selectedVerseEnd) {
+      fetchVersesWithWords();
+      setIsTextLookupModalOpen(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 max-w-4xl" ref={containerRef}>
       <div className="mb-4">
@@ -804,80 +852,15 @@ export default function Home() {
             </div>
           )}
 
-          {/* Dropdown Selectors */}
-          <div className="flex items-center gap-4">
-            <Select onValueChange={(value) => setSelectedBookId(Number(value))}>
-              <SelectTrigger className="w-32">
-                <span>
-                  {selectedBookId
-                    ? `${getBookTitle(selectedBookId)}`
-                    : "Select Book"}
-                </span>
-              </SelectTrigger>
-              <SelectContent>
-                {books.map((book) => (
-                  <SelectItem key={book.id} value={book.id.toString()}>
-                    {book.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              onValueChange={(value) => setSelectedChapterId(Number(value))}
+          {sections.length === 0 && (
+            <Button
+              onClick={() => setIsTextLookupModalOpen(true)}
+              variant="secondary"
+              className="ml-auto"
             >
-              <SelectTrigger className="w-32">
-                <span>
-                  {selectedChapterId
-                    ? `Chapter ${getChapterNumber(selectedChapterId)}`
-                    : "Select Chapter"}
-                </span>
-              </SelectTrigger>
-              <SelectContent>
-                {chapters.map((chapter) => (
-                  <SelectItem key={chapter.id} value={chapter.id.toString()}>
-                    {chapter.number}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              onValueChange={(value) => setSelectedVerseStart(Number(value))}
-            >
-              <SelectTrigger className="w-32">
-                <span>
-                  {selectedVerseStart
-                    ? `${getVerseNumber(selectedVerseStart)}`
-                    : "Verse Start"}
-                </span>
-              </SelectTrigger>
-              <SelectContent>
-                {verses.map((verse) => (
-                  <SelectItem key={verse.id} value={verse.id.toString()}>
-                    {verse.number}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            -
-            <Select
-              onValueChange={(value) => setSelectedVerseEnd(Number(value))}
-            >
-              <SelectTrigger className="w-32">
-                <span>
-                  {selectedVerseEnd
-                    ? `${getVerseNumber(selectedVerseEnd)}`
-                    : "Verse End"}
-                </span>
-              </SelectTrigger>
-              <SelectContent>
-                {verses.map((verse) => (
-                  <SelectItem key={verse.id} value={verse.id.toString()}>
-                    {verse.number}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              Text Lookup
+            </Button>
+          )}
 
           <Button
             onClick={clearAllData}
@@ -1150,6 +1133,25 @@ export default function Home() {
           )}
         </div>
       )}
+
+      <TextLookupModal
+        open={isTextLookupModalOpen}
+        onOpenChange={setIsTextLookupModalOpen}
+        books={books}
+        chapters={chapters}
+        verses={verses}
+        selectedBookId={selectedBookId}
+        selectedChapterId={selectedChapterId}
+        selectVerseIds={[selectedVerseStart, selectedVerseEnd]}
+        onBookSelect={(bookId) => setSelectedBookId(bookId)}
+        onChapterSelect={(chapterId) => setSelectedChapterId(chapterId)}
+        onVerseStartSelect={(verseId) => setSelectedVerseStart(verseId)}
+        onVerseEndSelect={(verseId) => setSelectedVerseEnd(verseId)}
+        onLookupText={() => {
+          fetchVersesWithWords();
+          setIsTextLookupModalOpen(false);
+        }}
+      />
     </div>
   );
 }
