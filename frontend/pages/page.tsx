@@ -253,14 +253,21 @@ export default function Home() {
   }, [isAuthenticated, selectedChapterId]);
 
   useEffect(() => {
+    if (!verses || verses.length === 0) {
+      setSelectedVerseStart(null);
+      setSelectedVerseEnd(null);
+      return;
+    }
+
     const minVerseId = verses.reduce(
       (min, verse) => Math.min(min, verse.id),
-      Infinity
+      1
     );
     const maxVerseId = verses.reduce(
       (max, verse) => Math.max(max, verse.id),
-      -Infinity
+      1
     );
+
     setSelectedVerseStart(minVerseId);
     setSelectedVerseEnd(maxVerseId);
   }, [verses]);

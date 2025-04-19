@@ -149,7 +149,7 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
           <Button onClick={() => onOpenChange(false)} variant="outline">
             Cancel
           </Button>
-          <Button onClick={onLookupText}>Lookup Text</Button>
+          <Button onClick={onLookupText}>Lookup</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
