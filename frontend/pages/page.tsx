@@ -236,16 +236,34 @@ export default function Home() {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    setChapters([]);
+    setSelectedChapterId(null);
+
     if (isAuthenticated && selectedBookId) {
       fetchChapters(selectedBookId);
     }
   }, [isAuthenticated, selectedBookId]);
 
   useEffect(() => {
+    setVerses([]);
+
     if (isAuthenticated && selectedChapterId) {
       fetchVerses(selectedChapterId);
     }
   }, [isAuthenticated, selectedChapterId]);
+
+  useEffect(() => {
+    const minVerseId = verses.reduce(
+      (min, verse) => Math.min(min, verse.id),
+      Infinity
+    );
+    const maxVerseId = verses.reduce(
+      (max, verse) => Math.max(max, verse.id),
+      -Infinity
+    );
+    setSelectedVerseStart(minVerseId);
+    setSelectedVerseEnd(maxVerseId);
+  }, [verses]);
 
   const getBookTitle = (bookId: number) => {
     const book = books.find((b) => b.id === bookId);
