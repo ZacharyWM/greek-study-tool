@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -19,7 +17,6 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 
-// TranslationToggle component
 const TranslationToggle: React.FC<{
   isEnabled: boolean;
   onToggle: (enabled: boolean) => void;
@@ -49,6 +46,7 @@ export default function Home() {
   const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
   const [lineSpacing, setLineSpacing] = useState(3);
   const [analysisId, setAnalysisId] = useState<number>(parseInt(id || "0"));
+
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
   const [translation, setTranslation] = useState<string>("");
@@ -62,6 +60,7 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
+
   const translationRef = useRef<HTMLTextAreaElement>(null);
   const splitContainerRef = useRef<HTMLDivElement>(null);
 
@@ -73,7 +72,6 @@ export default function Home() {
     getAccessTokenSilently,
   } = useAuth0();
 
-  // Function to extract verses from section
   const extractVerses = (section) => {
     if (!section || !section.words || !section.words.length) return [];
 
@@ -175,13 +173,20 @@ export default function Home() {
     if (isAuthenticated) {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("new") === "true") {
+        setSections([]);
+        setInputText("");
+        setAnalysisId(0);
+        setTitle("");
+        setSelectedWord(null);
+        setDialogOpen(false);
+        setSummaryOpen(false);
+        setDescription("");
         window.history.replaceState({}, "", "/analysis");
-      } else {
-        console.log("Fetching analysis with ID:", analysisId);
+      } else if (analysisId > 0) {
         fetchAnalysis(analysisId);
       }
     }
-  }, [isAuthenticated, analysisId]);
+  }, [isAuthenticated, analysisId, window.location.search]);
 
   const logoutWithRedirect = () =>
     logout({
@@ -336,7 +341,6 @@ export default function Home() {
     updateSectionsWithTranslation();
   };
 
-  // Trigger save when sections or other data changes
   useEffect(() => {
     if (sections.length > 0) {
       debouncedSave(
@@ -401,6 +405,8 @@ export default function Home() {
       setSections([newSection]);
       setInputText("");
       setTranslation("");
+      // TODO - we want to do this later
+      // setAnalysisId(0);
     }
   };
 
@@ -466,13 +472,6 @@ export default function Home() {
     );
   };
 
-  const handleEditParsing = () => {
-    if (selectedWord) {
-      setSummaryOpen(false);
-      setDialogOpen(true);
-    }
-  };
-
   const handleCopyToClipboard = () => {
     if (translation) {
       navigator.clipboard.writeText(translation);
@@ -493,6 +492,17 @@ export default function Home() {
     }
   };
 
+  const handleEditParsing = () => {
+    if (selectedWord) {
+      setSummaryOpen(false);
+      setDialogOpen(true);
+    }
+  };
+
+  const handleLineSpacingChange = (value: number[]) => {
+    setLineSpacing(value[0]);
+  };
+
   const clearAllData = () => {
     if (
       window.confirm(
@@ -501,11 +511,12 @@ export default function Home() {
     ) {
       setSections([]);
       setInputText("");
-      setTranslation("");
+
+      const sections = [];
       debouncedSave(
         title,
         description,
-        [],
+        sections,
         lineSpacing,
         analysisId,
         showTranslation,
@@ -638,7 +649,6 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4">
-
           {/* Layout Options */}
           {showTranslation && (
             <div className="flex items-center gap-2">
@@ -714,11 +724,6 @@ export default function Home() {
                   <WordContextMenu
                     word={word}
                     onLabelChange={handleLabelChange}
-                    onStartLine={() => {}}
-                    onEndLine={() => {}}
-                    onDeleteLine={() => {}}
-                    isDrawingLine={false}
-                    hasConnectedLines={false}
                   >
                     <span
                       className={`cursor-pointer hover:bg-gray-200 rounded inline-block mr-2 ${
@@ -826,11 +831,6 @@ export default function Home() {
                               key={word.id}
                               word={word}
                               onLabelChange={handleLabelChange}
-                              onStartLine={() => {}}
-                              onEndLine={() => {}}
-                              onDeleteLine={() => {}}
-                              isDrawingLine={false}
-                              hasConnectedLines={false}
                             >
                               <span
                                 className={`cursor-pointer hover:bg-gray-200 rounded inline-block mr-2 ${

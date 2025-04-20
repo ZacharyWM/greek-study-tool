@@ -29,7 +29,7 @@ const EnhancedTranslation: React.FC<EnhancedTranslationProps> = ({
   lines = [],
   onAnnotationChange,
   onUpdateSections,
-  lineSpacing = 1.6
+  lineSpacing = 1.6,
 }) => {
   const [showCopiedAlert, setShowCopiedAlert] = useState(false);
   const [splitPosition, setSplitPosition] = useState(50); // Default 50% split
@@ -37,15 +37,15 @@ const EnhancedTranslation: React.FC<EnhancedTranslationProps> = ({
   const splitContainerRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
   const translationRef = useRef<HTMLDivElement>(null);
-  const verseRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
-  
+  const verseRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
   // Function to extract verses from section
   const extractVerses = (section) => {
     if (!section || !section.words || !section.words.length) return [];
-    
+
     const verses: { number: string; words: any[] }[] = [];
     let currentVerse: { number: string; words: any[] } | null = null;
-    
+
     section.words.forEach((word, index) => {
       // Check if this word starts a new verse
       if (word.text.match(/^\[\d+\]/)) {
@@ -56,11 +56,11 @@ const EnhancedTranslation: React.FC<EnhancedTranslationProps> = ({
           if (currentVerse) {
             verses.push(currentVerse);
           }
-          
+
           // Start a new verse
           currentVerse = {
             number: match[1],
-            words: [word]
+            words: [word],
           };
         }
       } else if (currentVerse) {
@@ -70,93 +70,97 @@ const EnhancedTranslation: React.FC<EnhancedTranslationProps> = ({
         // First word with no verse marker, create a default verse
         currentVerse = {
           number: "1",
-          words: [word]
+          words: [word],
         };
       }
     });
-    
+
     // Add the last verse
     if (currentVerse) {
       verses.push(currentVerse);
     }
-    
+
     return verses;
   };
-  
+
   // Split translation into verses based on empty lines
   const translationVerses = translation.split(/\n\n+/);
   const verses = sections.length > 0 ? extractVerses(sections[0]) : [];
-  
+
   // Ensure we have enough empty verses to match the Greek text
   useEffect(() => {
     if (verses.length > translationVerses.length) {
       const newTranslation = [...translationVerses];
-      
+
       // Add empty strings for missing verses
       while (newTranslation.length < verses.length) {
         newTranslation.push("");
       }
-      
+
       onTranslationChange(newTranslation.join("\n\n"));
     }
   }, [verses.length, translationVerses.length, onTranslationChange]);
-  
+
   // Function to ensure translation boxes match Greek text height
   const adjustVerseHeights = () => {
     verses.forEach((verse) => {
-      const greekVerseEl = document.getElementById(`greek-verse-${verse.number}`);
-      const translationVerseEl = document.getElementById(`translation-verse-${verse.number}`);
-      
+      const greekVerseEl = document.getElementById(
+        `greek-verse-${verse.number}`
+      );
+      const translationVerseEl = document.getElementById(
+        `translation-verse-${verse.number}`
+      );
+
       if (greekVerseEl && translationVerseEl) {
         // Get computed height of the Greek verse container
         const greekHeight = greekVerseEl.getBoundingClientRect().height;
-        
+
         // Apply exact same height to translation verse container with small buffer
         const heightWithBuffer = Math.ceil(greekHeight) + 5; // 5px buffer for safety
         translationVerseEl.style.height = `${heightWithBuffer}px`;
-        
+
         // Reset min-height to ensure no conflicts
         translationVerseEl.style.minHeight = `${heightWithBuffer}px`;
-        
+
         // Ensure the textarea inside fills available space
-        const textarea = translationVerseEl.querySelector('textarea');
+        const textarea = translationVerseEl.querySelector("textarea");
         if (textarea) {
           textarea.style.height = `${heightWithBuffer - 40}px`; // Subtract padding/margins
         }
       }
     });
   };
-  
+
   // Match heights of corresponding verse containers after render
   useEffect(() => {
     // Initial adjustment after render
     setTimeout(adjustVerseHeights, 100);
-    
+
     // Use ResizeObserver to adjust when content changes
     const resizeObserver = new ResizeObserver(() => {
       setTimeout(adjustVerseHeights, 0);
     });
-    
+
     // Observe all verse containers
-    verses.forEach(verse => {
+    verses.forEach((verse) => {
       const greekEl = document.getElementById(`greek-verse-${verse.number}`);
       if (greekEl) resizeObserver.observe(greekEl);
     });
-    
+
     // Also adjust on window resize
-    window.addEventListener('resize', adjustVerseHeights);
-    
+    window.addEventListener("resize", adjustVerseHeights);
+
     // Adjust when split position changes
     if (splitPosition) {
       setTimeout(adjustVerseHeights, 100);
     }
-    
+
     return () => {
       resizeObserver.disconnect();
-      window.removeEventListener('resize', adjustVerseHeights);
+      window.removeEventListener("resize", adjustVerseHeights);
     };
   }, [verses, splitPosition]);
-  
+
   const handleCopyToClipboard = () => {
     if (translation) {
       navigator.clipboard.writeText(translation);
@@ -164,7 +168,7 @@ const EnhancedTranslation: React.FC<EnhancedTranslationProps> = ({
       setTimeout(() => setShowCopiedAlert(false), 2000);
     }
   };
-  
+
   const handleDownloadTranslation = () => {
     if (translation) {
       const blob = new Blob([translation], { type: "text/plain" });
@@ -176,41 +180,41 @@ const EnhancedTranslation: React.FC<EnhancedTranslationProps> = ({
       URL.revokeObjectURL(url);
     }
   };
-  
+
   // Styling updates for verse containers
-const verseContainerStyle = {
-  fontFamily: "'EB Garamond', 'Georgia', serif",
-  fontSize: "1.1rem",
-  lineHeight: "1.6",
-  color: "#252525", // Dark text
-  background: "#FFFFFF", // White background for content
-  border: "1px solid #D1C4AC", // Cream border
-  borderRadius: "0.25rem",
-  margin: "0.5rem 0",
-  padding: "1rem"
-};
+  const verseContainerStyle = {
+    fontFamily: "'EB Garamond', 'Georgia', serif",
+    fontSize: "1.1rem",
+    lineHeight: "1.6",
+    color: "#252525", // Dark text
+    background: "#FFFFFF", // White background for content
+    border: "1px solid #D1C4AC", // Cream border
+    borderRadius: "0.25rem",
+    margin: "0.5rem 0",
+    padding: "1rem",
+  };
 
-// Styling for verse numbers
-const verseNumberStyle = {
-  fontFamily: "'EB Garamond', 'Georgia', serif",
-  fontWeight: "600",
-  color: "#9F1C1C", // Oxford red
-  fontSize: "0.875rem"
-};
+  // Styling for verse numbers
+  const verseNumberStyle = {
+    fontFamily: "'EB Garamond', 'Georgia', serif",
+    fontWeight: "600",
+    color: "#9F1C1C", // Oxford red
+    fontSize: "0.875rem",
+  };
 
-// Styling for panel headers
-const panelHeaderStyle = {
-  backgroundColor: "#002147", // Oxford blue
-  color: "#FFFFFF",
-  padding: "0.75rem 1rem",
-  fontFamily: "'EB Garamond', 'Georgia', serif",
-  fontWeight: "600",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  borderTopLeftRadius: "0.25rem",
-  borderTopRightRadius: "0.25rem"
-};
+  // Styling for panel headers
+  const panelHeaderStyle = {
+    backgroundColor: "#002147", // Oxford blue
+    color: "#FFFFFF",
+    padding: "0.75rem 1rem",
+    fontFamily: "'EB Garamond', 'Georgia', serif",
+    fontWeight: "600",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopLeftRadius: "0.25rem",
+    borderTopRightRadius: "0.25rem",
+  };
 
   // Function to format verse marker as superscript
   const formatVerseText = (text: string): React.ReactNode => {
@@ -225,7 +229,7 @@ const panelHeaderStyle = {
     }
     return text;
   };
-  
+
   // Handle mouse down for resizer
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -235,15 +239,15 @@ const panelHeaderStyle = {
   // Handle mouse move for resizing
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging || !splitContainerRef.current) return;
-    
+
     const containerRect = splitContainerRef.current.getBoundingClientRect();
     const containerWidth = containerRect.width;
     const mouseX = e.clientX - containerRect.left;
-    
+
     // Calculate percentage (with limits to prevent extreme sizing)
     let newSplitPosition = (mouseX / containerWidth) * 100;
     newSplitPosition = Math.max(30, Math.min(70, newSplitPosition));
-    
+
     setSplitPosition(newSplitPosition);
   };
 
@@ -255,33 +259,33 @@ const panelHeaderStyle = {
   // Add event listeners for mouse move and up
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     }
-    
+
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging]);
 
   // Preset split layouts
-  const setLayout = (preset: 'greek' | 'equal' | 'translation') => {
-    switch(preset) {
-      case 'greek':
+  const setLayout = (preset: "greek" | "equal" | "translation") => {
+    switch (preset) {
+      case "greek":
         setSplitPosition(65);
         break;
-      case 'equal':
+      case "equal":
         setSplitPosition(50);
         break;
-      case 'translation':
+      case "translation":
         setSplitPosition(35);
         break;
       default:
         setSplitPosition(50);
     }
   };
-  
+
   return (
     <div className="flex flex-col w-full">
       {/* Layout Controls */}
@@ -289,43 +293,56 @@ const panelHeaderStyle = {
         <div className="flex items-center gap-2">
           <span className="text-sm">Layout:</span>
           <div className="flex border rounded overflow-hidden">
-            <button 
-              className={`px-2 py-1 text-xs ${splitPosition >= 60 ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-              onClick={() => setLayout('greek')}
+            <button
+              className={`px-2 py-1 text-xs ${
+                splitPosition >= 60 ? "bg-blue-100" : "hover:bg-gray-100"
+              }`}
+              onClick={() => setLayout("greek")}
             >
               Greek Focus
             </button>
-            <button 
-              className={`px-2 py-1 text-xs border-l border-r ${splitPosition > 40 && splitPosition < 60 ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-              onClick={() => setLayout('equal')}
+            <button
+              className={`px-2 py-1 text-xs border-l border-r ${
+                splitPosition > 40 && splitPosition < 60
+                  ? "bg-blue-100"
+                  : "hover:bg-gray-100"
+              }`}
+              onClick={() => setLayout("equal")}
             >
               Equal
             </button>
-            <button 
-              className={`px-2 py-1 text-xs ${splitPosition <= 40 ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-              onClick={() => setLayout('translation')}
+            <button
+              className={`px-2 py-1 text-xs ${
+                splitPosition <= 40 ? "bg-blue-100" : "hover:bg-gray-100"
+              }`}
+              onClick={() => setLayout("translation")}
             >
               Translation Focus
             </button>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {!isSaved && (
-            <span className="text-xs text-amber-500 italic">Unsaved changes</span>
+            <span className="text-xs text-amber-500 italic">
+              Unsaved changes
+            </span>
           )}
         </div>
       </div>
-    
+
       {/* Main resizable container */}
-      <div 
+      <div
         ref={splitContainerRef}
         className="flex overflow-hidden border rounded-lg relative"
-        style={{ cursor: isDragging ? 'col-resize' : 'auto', minHeight: "400px" }}
+        style={{
+          cursor: isDragging ? "col-resize" : "auto",
+          minHeight: "400px",
+        }}
       >
         {/* Greek Text Column */}
-        <div 
-          className="overflow-y-auto" 
+        <div
+          className="overflow-y-auto"
           ref={textContainerRef}
           style={{ width: `${splitPosition}%` }}
         >
@@ -333,31 +350,37 @@ const panelHeaderStyle = {
           <div className="sticky top-0 bg-blue-700 text-white p-2 font-bold border-b z-10">
             Greek Text
           </div>
-          
+
           {/* Display verses in sections */}
           <div className="relative">
             {verses.length > 0 ? (
               verses.map((verse) => (
-                <div 
+                <div
                   key={`greek-verse-${verse.number}`}
                   id={`greek-verse-${verse.number}`}
                   className="p-4 bg-white border-b flex flex-col"
-                  ref={el => verseRefs.current[`greek-${verse.number}`] = el}
-                  style={{ boxSizing: 'border-box' }}
+                  ref={(el) =>
+                    (verseRefs.current[`greek-${verse.number}`] = el)
+                  }
+                  style={{ boxSizing: "border-box" }}
                 >
-                  <div className="greek-text text-lg" style={{ 
-                    lineHeight: lineSpacing,
-                    wordSpacing: '0.4em',
-                    padding: '0.5rem'
-                  }}>
+                  <div
+                    className="greek-text text-lg"
+                    style={{
+                      lineHeight: lineSpacing,
+                      wordSpacing: "0.4em",
+                      padding: "0.5rem",
+                    }}
+                  >
                     {verse.words.map((word, wordIndex) => {
                       // Format first word of verse to display verse number as superscript
-                      const displayWord = wordIndex === 0 && word.text.match(/^\[\d+\]/) 
-                        ? formatVerseText(word.text)
-                        : word.text;
-                        
+                      const displayWord =
+                        wordIndex === 0 && word.text.match(/^\[\d+\]/)
+                          ? formatVerseText(word.text)
+                          : word.text;
+
                       return (
-                        <span 
+                        <span
                           key={word.id}
                           className={`cursor-pointer hover:bg-gray-200 rounded inline-block mr-2 ${
                             word.parsing ? `parsed-word ${word.parsing}` : ""
@@ -375,22 +398,22 @@ const panelHeaderStyle = {
             )}
           </div>
         </div>
-        
+
         {/* Resizer handle */}
-        <div 
+        <div
           className="absolute top-0 bottom-0 w-5 bg-transparent hover:bg-gray-100 cursor-col-resize z-10 flex items-center justify-center transition-colors"
-          style={{ 
+          style={{
             left: `calc(${splitPosition}% - 10px)`,
-            opacity: isDragging ? 0.8 : 0.5
+            opacity: isDragging ? 0.8 : 0.5,
           }}
           onMouseDown={handleMouseDown}
         >
           <div className="h-12 w-1 bg-gray-300 rounded"></div>
         </div>
-        
+
         {/* Translation Column */}
-        <div 
-          className="overflow-y-auto border-l" 
+        <div
+          className="overflow-y-auto border-l"
           ref={translationRef}
           style={{ width: `${100 - splitPosition}%` }}
         >
@@ -398,28 +421,28 @@ const panelHeaderStyle = {
           <div className="sticky top-0 bg-blue-700 text-white p-2 font-bold border-b z-10 flex justify-between items-center">
             <span>Translation</span>
             <div className="flex items-center gap-1">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={handleCopyToClipboard} 
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCopyToClipboard}
                 title="Copy to clipboard"
                 className="h-6 w-6 p-0 bg-white"
               >
                 <Copy className="h-3 w-3 text-black" />
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={handleDownloadTranslation} 
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleDownloadTranslation}
                 title="Download translation"
                 className="h-6 w-6 p-0 bg-white"
               >
                 <Download className="h-3 w-3 text-black" />
               </Button>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 variant="outline"
-                onClick={onSaveTranslation} 
+                onClick={onSaveTranslation}
                 title="Save translation"
                 className="h-6 px-2 bg-white text-black text-xs"
                 disabled={isSaved}
@@ -429,23 +452,27 @@ const panelHeaderStyle = {
               </Button>
             </div>
           </div>
-          
+
           {showCopiedAlert && (
             <Alert className="m-2 py-1 bg-green-50 border-green-200">
-              <AlertDescription className="text-xs">Translation copied to clipboard!</AlertDescription>
+              <AlertDescription className="text-xs">
+                Translation copied to clipboard!
+              </AlertDescription>
             </Alert>
           )}
-          
+
           {/* Display translation by verse sections */}
           <div style={{ fontFamily: "'Times New Roman', serif" }}>
             {verses.length > 0 ? (
               verses.map((verse, index) => (
-                <div 
+                <div
                   key={`translation-verse-${verse.number}`}
                   id={`translation-verse-${verse.number}`}
                   className="p-4 bg-white border-b flex flex-col"
-                  ref={el => verseRefs.current[`translation-${verse.number}`] = el}
-                  style={{ height: 'auto', boxSizing: 'border-box' }}
+                  ref={(el) =>
+                    (verseRefs.current[`translation-${verse.number}`] = el)
+                  }
+                  style={{ height: "auto", boxSizing: "border-box" }}
                 >
                   <div className="text-blue-700 text-sm font-semibold mb-1">
                     <sup>{verse.number}</sup>
@@ -453,16 +480,16 @@ const panelHeaderStyle = {
                   <Textarea
                     placeholder={`Translation for verse ${verse.number}...`}
                     className="w-full border-0 p-0 focus-visible:ring-0 bg-transparent resize-none"
-                    style={{ 
+                    style={{
                       fontFamily: "'Times New Roman', serif",
-                      height: 'calc(100% - 25px)', // Subtract verse number height
-                      boxSizing: 'border-box'
+                      height: "calc(100% - 25px)", // Subtract verse number height
+                      boxSizing: "border-box",
                     }}
-                    value={translationVerses[index] || ''}
+                    value={translationVerses[index] || ""}
                     onChange={(e) => {
                       const newVerses = [...translationVerses];
                       newVerses[index] = e.target.value;
-                      onTranslationChange(newVerses.join('\n\n'));
+                      onTranslationChange(newVerses.join("\n\n"));
                     }}
                   />
                 </div>

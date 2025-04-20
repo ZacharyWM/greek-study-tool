@@ -26,11 +26,6 @@ interface WordContextMenuProps {
     newLabel: string | undefined,
     position?: { x: number; y: number }
   ) => void;
-  onStartLine: () => void;  // Simplified props - maintained for backwards compatibility
-  onEndLine: () => void;    // Simplified props - maintained for backwards compatibility
-  onDeleteLine: () => void; // Simplified props - maintained for backwards compatibility
-  isDrawingLine: boolean;   // Simplified props - maintained for backwards compatibility
-  hasConnectedLines: boolean; // Simplified props - maintained for backwards compatibility
   children: React.ReactNode;
 }
 
