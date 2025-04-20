@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	"github.com/ZacharyWM/greek-study-tool/server/database"
-	"github.com/lib/pq"
 )
 
 type Book struct {
@@ -107,7 +106,7 @@ func GetVerses(chapterID int) ([]Verse, error) {
 	return verses, nil
 }
 
-func GetVersesWithWords(verseIDs []int) ([]Verse, error) {
+func GetVersesWithWords(startID, endID int) ([]Verse, error) {
 	query := `
         SELECT json_agg(
             json_build_object(
@@ -131,10 +130,10 @@ func GetVersesWithWords(verseIDs []int) ([]Verse, error) {
             )
         ) AS verses
         FROM verses v
-        WHERE v.id = ANY($1)`
+        WHERE v.id BETWEEN $1 AND $2`
 
 	// Execute the query
-	row := database.DB.QueryRow(query, pq.Array(verseIDs))
+	row := database.DB.QueryRow(query, startID, endID)
 
 	// The result will be a JSON array, so we need to store it as a raw JSON string first
 	var jsonResult []byte

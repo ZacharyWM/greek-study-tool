@@ -9,6 +9,7 @@ import {
 import { Select, SelectTrigger, SelectContent, SelectItem } from "./ui/select";
 import { Button } from "./ui/button";
 import type { Book, Chapter, Verse } from "../types/models";
+import { useAuth0 } from "@auth0/auth0-react";
 
 interface TextLookupModalProps {
   open: boolean;
@@ -16,6 +17,7 @@ interface TextLookupModalProps {
   books: Book[];
   chapters: Chapter[];
   verses: Verse[];
+  setVerses: (verses: Verse[]) => void;
   selectedBookId: number | null;
   selectedChapterId: number | null;
   selectedVerseIdStart: number | null;
@@ -24,7 +26,7 @@ interface TextLookupModalProps {
   onChapterSelect: (chapterId: number) => void;
   onVerseStartSelect: (verseId: number) => void;
   onVerseEndSelect: (verseId: number) => void;
-  onLookupText: () => void;
+  closeModal: () => void;
 }
 
 const TextLookupModal: React.FC<TextLookupModalProps> = ({
@@ -33,6 +35,7 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
   books,
   chapters,
   verses,
+  setVerses,
   selectedBookId,
   selectedChapterId,
   selectedVerseIdStart,
@@ -41,13 +44,53 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
   onChapterSelect,
   onVerseStartSelect,
   onVerseEndSelect,
-  onLookupText,
+  closeModal: closeModal,
 }) => {
   const isLookupDisabled =
     !selectedBookId ||
     !selectedChapterId ||
     !selectedVerseIdStart ||
     !selectedVerseIdEnd;
+
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
+
+  const fetchVersesWithWords = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const token = await getAccessTokenSilently();
+
+      if (selectedVerseIdStart! > selectedVerseIdEnd!) {
+        alert(
+          "The start verse ID must be less than or equal to the end verse ID."
+        );
+        return;
+      }
+      const response = await fetch(
+        `/api/verses?startId=${selectedVerseIdStart}&endId=${selectedVerseIdEnd}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setVerses(data);
+        closeModal();
+      } else {
+        console.error(
+          "Failed to fetch verses with words:",
+          await response.text()
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching verses with words:", error);
+    }
+  };
+
+  const lookupClicked = async () => {
+    await fetchVersesWithWords();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -163,7 +206,7 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
           <Button onClick={() => onOpenChange(false)} variant="outline">
             Cancel
           </Button>
-          <Button onClick={onLookupText} disabled={isLookupDisabled}>
+          <Button onClick={lookupClicked} disabled={isLookupDisabled}>
             Lookup
           </Button>
         </DialogFooter>

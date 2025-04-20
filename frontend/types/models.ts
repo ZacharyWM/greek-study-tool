@@ -53,12 +53,14 @@ export interface Verse {
   id: number;
   chapterId: number;
   number: number;
-  words?: {
-    id: number;
-    verseId: number;
-    text: string;
-    lemma: string;
-    strong: string;
-    morph: string;
-  };
+  words?: VerseWord[] | null;
+}
+
+export interface VerseWord {
+  id: number;
+  verseId: number;
+  text: string;
+  lemma: string;
+  strong: string;
+  morph: string;
 }

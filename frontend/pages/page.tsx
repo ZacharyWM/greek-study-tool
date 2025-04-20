@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
@@ -18,6 +24,7 @@ import type {
   Book,
   Chapter,
   Verse,
+  VerseWord,
 } from "../types/models";
 import debounce from "lodash/debounce";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -76,6 +83,7 @@ export default function Home() {
   const [selectedVerseIdEnd, setSelectedVerseIdEnd] = useState<number | null>(
     null
   );
+  const [words, setWords] = useState<Map<string, VerseWord>>(new Map());
 
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
@@ -205,32 +213,6 @@ export default function Home() {
     }
   };
 
-  const fetchVersesWithWords = async () => {
-    if (!isAuthenticated) return;
-    try {
-      const token = await getAccessTokenSilently();
-      const response = await fetch(
-        `/api/verses/words?startId=${selectedVerseIdStart}&endId=${selectedVerseIdEnd}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setVerses(data);
-      } else {
-        console.error(
-          "Failed to fetch verses with words:",
-          await response.text()
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching verses with words:", error);
-    }
-  };
-
   useEffect(() => {
     if (isAuthenticated) {
       fetchBooks();
@@ -254,6 +236,67 @@ export default function Home() {
     }
   }, [isAuthenticated, selectedChapterId]);
 
+  const getWordsFromVerses = (verses: Verse[]) => {
+    const wordsMap = new Map<string, VerseWord>();
+    let text = "";
+    verses.forEach((v) => {
+      text += `[${v.number}] `;
+      if (v.words) {
+        v.words.forEach((word) => {
+          text += word.text + " ";
+          wordsMap.set(word.text, word);
+        });
+      }
+      text += "\n";
+    });
+    setWords(wordsMap);
+    setInputText(text.trim());
+    setTitle(
+      `${getBookById(selectedBookId || 0)} ${getChapterById(
+        selectedChapterId || 0
+      )}`
+    );
+  };
+
+  const getBookById = useMemo(() => {
+    return (bookId: number) => {
+      const book = books.find((b) => b.id === bookId);
+      return book ? book.title : null;
+    };
+  }, [books]);
+
+  const getChapterById = useMemo(() => {
+    return (chapterId: number) => {
+      const chapter = chapters.find((c) => c.id === chapterId);
+      return chapter ? chapter.number : null;
+    };
+  }, [chapters]);
+
+  const getVerseNumber = useMemo(() => {
+    return (verseId: number) => {
+      const verse = verses.find((v) => v.id === verseId);
+      return verse ? verse.number : null;
+    };
+  }, [verses]);
+
+  // useEffect(() => {
+  //   let inputTextWords = "";
+  //   let verse = 0;
+  //   words.forEach((word) => {
+  //     const verseNumber = getVerseNumber(word.verseId) ?? 0;
+  //     console.log(verseNumber);
+  //     if (verseNumber !== verse) {
+  //       verse = verseNumber;
+  //       if (inputTextWords.length > 0) {
+  //         inputTextWords += "\n\n";
+  //       }
+  //       inputTextWords += `[${word.verseId}]`;
+  //     }
+  //     inputTextWords += word.text + " ";
+  //   });
+  //   setInputText(inputTextWords.trim());
+  // }, [words]);
+
   useEffect(() => {
     if (!verses || verses.length === 0) {
       setSelectedVerseIdStart(null);
@@ -261,9 +304,14 @@ export default function Home() {
       return;
     }
 
+    if (verses[0].words && verses[0].words.length > 0) {
+      getWordsFromVerses(verses);
+      return;
+    }
+
     const minVerseId = verses.reduce(
       (min, verse) => Math.min(min, verse.id),
-      1
+      Infinity
     );
     const maxVerseId = verses.reduce(
       (max, verse) => Math.max(max, verse.id),
@@ -273,21 +321,6 @@ export default function Home() {
     setSelectedVerseIdStart(minVerseId);
     setSelectedVerseIdEnd(maxVerseId);
   }, [verses]);
-
-  const getBookTitle = (bookId: number) => {
-    const book = books.find((b) => b.id === bookId);
-    return book ? book.title : "";
-  };
-
-  const getChapterNumber = (chapterId: number) => {
-    const chapter = chapters.find((c) => c.id === chapterId);
-    return chapter ? chapter.number : "";
-  };
-
-  const getVerseNumber = (verseId: number) => {
-    const verse = verses.find((v) => v.id === verseId);
-    return verse ? verse.number : "";
-  };
 
   const fetchAnalysis = async (id: number) => {
     if (!isAuthenticated) return;
@@ -802,13 +835,6 @@ export default function Home() {
   // Add state for the text lookup modal
   const [isTextLookupModalOpen, setIsTextLookupModalOpen] = useState(false);
 
-  const handleLookupText = () => {
-    if (selectedVerseIdStart && selectedVerseIdEnd) {
-      fetchVersesWithWords();
-      setIsTextLookupModalOpen(false);
-    }
-  };
-
   return (
     <div className="container mx-auto p-4 max-w-4xl" ref={containerRef}>
       <div className="mb-4">
@@ -1155,6 +1181,7 @@ export default function Home() {
         books={books}
         chapters={chapters}
         verses={verses}
+        setVerses={setVerses}
         selectedBookId={selectedBookId}
         selectedChapterId={selectedChapterId}
         onBookSelect={(bookId) => setSelectedBookId(bookId)}
@@ -1163,8 +1190,7 @@ export default function Home() {
         onVerseEndSelect={(verseId) => setSelectedVerseIdEnd(verseId)}
         selectedVerseIdStart={selectedVerseIdStart}
         selectedVerseIdEnd={selectedVerseIdEnd}
-        onLookupText={() => {
-          fetchVersesWithWords();
+        closeModal={() => {
           setIsTextLookupModalOpen(false);
         }}
       />

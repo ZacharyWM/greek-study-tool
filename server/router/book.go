@@ -51,23 +51,18 @@ func getVersesHandler(c *gin.Context) {
 }
 
 func getVersesHandlerWithWords(c *gin.Context) {
-	vids, ok := c.GetQueryArray("verseId")
-	if !ok || len(vids) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "verseIds is required"})
+	startId, err := strconv.Atoi(c.Query("startId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "startId is required"})
+		return
+	}
+	endId, err := strconv.Atoi(c.Query("endId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "endId is required"})
 		return
 	}
 
-	verseIDs := make([]int, len(vids))
-	for i, id := range vids {
-		vid, err := strconv.Atoi(id)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "verseIds must be integers"})
-			return
-		}
-		verseIDs[i] = vid
-	}
-
-	verses, err := service.GetVersesWithWords(verseIDs)
+	verses, err := service.GetVersesWithWords(startId, endId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve verses"})
 		return
