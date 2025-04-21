@@ -1,5 +1,5 @@
 /* 
- * Greek Syntax Lab - Oxford Scholar Theme
+ * NT Syntax Lab - Oxford Scholar Theme
  * 
  * Primary Color: #002147 (Oxford Blue)
  * Secondary Color: #F7F1E3 (Cream)
@@ -9,10 +9,20 @@
 /* Import fonts */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* SBLBibLit font declarations - Update the paths to match your project structure */
+@font-face {
+  font-family: 'SBLBibLit';
+  src: url('/fonts/SBLBibLit.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* Custom Oxford Scholar Theme */
 @layer base {
@@ -152,14 +162,22 @@
     line-height: 1.4;
   }
   
-  /* Keep Greek text styling */
+  /* Keep Greek text styling - IMPORTANT: Use SBLBibLit font as primary */
   .greek-text {
-    font-family: "SBLBibLit", serif;
+    font-family: "SBLBibLit", serif !important;
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
     hyphens: auto;
     line-height: 1.6;
+  }
+
+  /* Additional Greek text selectors to ensure font consistency */
+  .parsed-word,
+  [id^="greek-verse-"] span,
+  .text-panel .greek-text,
+  .greek-text span {
+    font-family: "SBLBibLit", serif !important;
   }
 
   /* Translation styling */
