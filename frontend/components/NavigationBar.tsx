@@ -11,7 +11,7 @@ interface NavigationBarProps {
 
 export const NavigationBar: React.FC<NavigationBarProps> = ({
   sidebar,
-  setSidebar
+  setSidebar,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -36,7 +36,10 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -66,7 +69,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   };
 
   // Greek text from 2 Timothy 2:15
-  const greekText = "σπούδασον σεαυτὸν, δόκιμον παραστῆσαι τῷ Θεῷ, ἐργάτην ἀνεπαίσχυντον, ὀρθοτομοῦντα τὸν λόγον τῆς ἀληθείας";
+  const greekText =
+    "σπούδασον σεαυτὸν, δόκιμον παραστῆσαι τῷ Θεῷ, ἐργάτην ἀνεπαίσχυντον, ὀρθοτομοῦντα τὸν λόγον τῆς ἀληθείας";
 
   return (
     <nav className="bg-[#002147] text-white py-3 px-4 sm:px-6 flex justify-between items-center shadow-md">
@@ -95,10 +99,12 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
         </div>
         <div className="flex flex-col">
           <div className="text-xl font-serif tracking-wide">NT Syntax Lab</div>
-          <div className="text-xs text-blue-200 font-serif italic hidden sm:block">Greek New Testament Analysis Tool</div>
+          <div className="text-xs text-blue-200 font-serif italic hidden sm:block">
+            Greek New Testament Analysis Tool
+          </div>
         </div>
       </div>
-      
+
       {/* Center Greek Text */}
       <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 max-w-xl">
         <div className="text-center">
@@ -107,7 +113,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
           </div>
         </div>
       </div>
-      
+
       <div className="flex items-center">
         {isAuthenticated ? (
           <div className="flex items-center">
@@ -125,8 +131,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
             </button>
           </div>
         ) : (
-          <button 
-            onClick={userLogin} 
+          <button
+            onClick={userLogin}
             className={cn(
               "bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm transition-colors",
               "border border-blue-700 shadow-sm"
