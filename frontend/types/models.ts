@@ -35,3 +35,32 @@ export interface PhraseType {
   name: string;
   color: string;
 }
+
+export interface Book {
+  id: number;
+  title: string;
+  chapters?: Chapter[];
+}
+
+export interface Chapter {
+  id: number;
+  bookId: number;
+  number: number;
+  verses?: Verse[];
+}
+
+export interface Verse {
+  id: number;
+  chapterId: number;
+  number: number;
+  words?: VerseWord[] | null;
+}
+
+export interface VerseWord {
+  id: number;
+  verseId: number;
+  text: string;
+  lemma: string;
+  strong: string;
+  morph: string;
+}

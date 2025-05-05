@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
@@ -11,11 +17,27 @@ import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { Save, Copy, Download } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
-import type { Section, Word, WordParsing } from "../types/models";
+import type {
+  Section,
+  Word,
+  WordParsing,
+  Book,
+  Chapter,
+  Verse,
+  VerseWord,
+} from "../types/models";
 import debounce from "lodash/debounce";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "../components/ui/select";
+import { get } from "http";
+import TextLookupModal from "../components/TextLookupModal";
 
 const TranslationToggle: React.FC<{
   isEnabled: boolean;
@@ -46,6 +68,22 @@ export default function Home() {
   const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
   const [lineSpacing, setLineSpacing] = useState(3);
   const [analysisId, setAnalysisId] = useState<number>(parseInt(id || "0"));
+
+  // Books, Chapters, Verses
+  const [books, setBooks] = useState<Book[]>([]);
+  const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [selectedChapterId, setSelectedChapterId] = useState<number | null>(
+    null
+  );
+  const [verses, setVerses] = useState<Verse[]>([]);
+  const [selectedVerseIdStart, setSelectedVerseIdStart] = useState<
+    number | null
+  >(null);
+  const [selectedVerseIdEnd, setSelectedVerseIdEnd] = useState<number | null>(
+    null
+  );
+  const [words, setWords] = useState<Map<string, VerseWord>>(new Map());
 
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
@@ -114,6 +152,175 @@ export default function Home() {
 
     return verses;
   };
+
+  const fetchBooks = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch("/api/books", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBooks(data);
+      } else {
+        console.error("Failed to fetch books:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    }
+  };
+
+  const fetchChapters = async (bookId: number) => {
+    if (!isAuthenticated) return;
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`/api/books/${bookId}/chapters`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setChapters(data);
+      } else {
+        console.error("Failed to fetch chapters:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error fetching chapters:", error);
+    }
+  };
+
+  const fetchVerses = async (chapterId: number) => {
+    if (!isAuthenticated) return;
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`/api/chapters/${chapterId}/verses`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setVerses(data);
+      } else {
+        console.error("Failed to fetch verses:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error fetching verses:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchBooks();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    setChapters([]);
+    setSelectedChapterId(null);
+
+    if (isAuthenticated && selectedBookId) {
+      fetchChapters(selectedBookId);
+    }
+  }, [isAuthenticated, selectedBookId]);
+
+  useEffect(() => {
+    setVerses([]);
+
+    if (isAuthenticated && selectedChapterId) {
+      fetchVerses(selectedChapterId);
+    }
+  }, [isAuthenticated, selectedChapterId]);
+
+  const getWordsFromVerses = (verses: Verse[]) => {
+    const wordsMap = new Map<string, VerseWord>();
+    let text = "";
+    verses.forEach((v) => {
+      text += `[${v.number}] `;
+      if (v.words) {
+        v.words.forEach((word) => {
+          text += word.text + " ";
+          wordsMap.set(word.text, word);
+        });
+      }
+      text += "\n";
+    });
+    setWords(wordsMap);
+    setInputText(text.trim());
+    setTitle(
+      `${getBookById(selectedBookId || 0)} ${getChapterById(
+        selectedChapterId || 0
+      )}`
+    );
+  };
+
+  const getBookById = useMemo(() => {
+    return (bookId: number) => {
+      const book = books.find((b) => b.id === bookId);
+      return book ? book.title : null;
+    };
+  }, [books]);
+
+  const getChapterById = useMemo(() => {
+    return (chapterId: number) => {
+      const chapter = chapters.find((c) => c.id === chapterId);
+      return chapter ? chapter.number : null;
+    };
+  }, [chapters]);
+
+  const getVerseNumber = useMemo(() => {
+    return (verseId: number) => {
+      const verse = verses.find((v) => v.id === verseId);
+      return verse ? verse.number : null;
+    };
+  }, [verses]);
+
+  // useEffect(() => {
+  //   let inputTextWords = "";
+  //   let verse = 0;
+  //   words.forEach((word) => {
+  //     const verseNumber = getVerseNumber(word.verseId) ?? 0;
+  //     console.log(verseNumber);
+  //     if (verseNumber !== verse) {
+  //       verse = verseNumber;
+  //       if (inputTextWords.length > 0) {
+  //         inputTextWords += "\n\n";
+  //       }
+  //       inputTextWords += `[${word.verseId}]`;
+  //     }
+  //     inputTextWords += word.text + " ";
+  //   });
+  //   setInputText(inputTextWords.trim());
+  // }, [words]);
+
+  useEffect(() => {
+    if (!verses || verses.length === 0) {
+      setSelectedVerseIdStart(null);
+      setSelectedVerseIdEnd(null);
+      return;
+    }
+
+    if (verses[0].words && verses[0].words.length > 0) {
+      getWordsFromVerses(verses);
+      return;
+    }
+
+    const minVerseId = verses.reduce(
+      (min, verse) => Math.min(min, verse.id),
+      Infinity
+    );
+    const maxVerseId = verses.reduce(
+      (max, verse) => Math.max(max, verse.id),
+      1
+    );
+
+    setSelectedVerseIdStart(minVerseId);
+    setSelectedVerseIdEnd(maxVerseId);
+  }, [verses]);
 
   const fetchAnalysis = async (id: number) => {
     if (!isAuthenticated) return;
@@ -620,10 +827,13 @@ export default function Home() {
   };
 
   // Get verses from the first section
-  const verses = sections.length > 0 ? extractVerses(sections[0]) : [];
+  const sectionVerses = sections.length > 0 ? extractVerses(sections[0]) : [];
 
   // Split translation into verses based on empty lines
   const translationVerses = translation.split(/\n\n+/);
+
+  // Add state for the text lookup modal
+  const [isTextLookupModalOpen, setIsTextLookupModalOpen] = useState(false);
 
   return (
     <div className="container mx-auto p-4 max-w-4xl" ref={containerRef}>
@@ -649,6 +859,15 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4">
+          {sections.length === 0 && (
+            <Button
+              onClick={() => setIsTextLookupModalOpen(true)}
+              variant="secondary"
+            >
+              Text Lookup
+            </Button>
+          )}
+
           {/* Layout Options */}
           {showTranslation && (
             <div className="flex items-center gap-2">
@@ -684,7 +903,11 @@ export default function Home() {
             </div>
           )}
 
-          <Button onClick={clearAllData} variant="secondary">
+          <Button
+            onClick={clearAllData}
+            variant="secondary"
+            className="ml-auto"
+          >
             Clear
           </Button>
         </div>
@@ -695,7 +918,7 @@ export default function Home() {
           <Textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Paste your Greek text here..."
+            placeholder="Select your text or paste it here..."
             className="w-full min-h-[100px] greek-text"
           />
           <Button onClick={handleTextSubmit} className="mt-2">
@@ -800,8 +1023,8 @@ export default function Home() {
           <div className="relative">
             {/* Content - removed overflow property */}
             <div className="relative" ref={textContainerRef}>
-              {verses.length > 0 ? (
-                verses.map((verse, index) => (
+              {sectionVerses.length > 0 ? (
+                sectionVerses.map((verse, index) => (
                   <div
                     key={`verse-row-${verse.number}`}
                     className="flex border-b"
@@ -951,6 +1174,26 @@ export default function Home() {
           )}
         </div>
       )}
+
+      <TextLookupModal
+        open={isTextLookupModalOpen}
+        onOpenChange={setIsTextLookupModalOpen}
+        books={books}
+        chapters={chapters}
+        verses={verses}
+        setVerses={setVerses}
+        selectedBookId={selectedBookId}
+        selectedChapterId={selectedChapterId}
+        onBookSelect={(bookId) => setSelectedBookId(bookId)}
+        onChapterSelect={(chapterId) => setSelectedChapterId(chapterId)}
+        onVerseStartSelect={(verseId) => setSelectedVerseIdStart(verseId)}
+        onVerseEndSelect={(verseId) => setSelectedVerseIdEnd(verseId)}
+        selectedVerseIdStart={selectedVerseIdStart}
+        selectedVerseIdEnd={selectedVerseIdEnd}
+        closeModal={() => {
+          setIsTextLookupModalOpen(false);
+        }}
+      />
     </div>
   );
 }
