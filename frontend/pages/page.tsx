@@ -277,24 +277,6 @@ export default function Home() {
     };
   }, [verses]);
 
-  // useEffect(() => {
-  //   let inputTextWords = "";
-  //   let verse = 0;
-  //   words.forEach((word) => {
-  //     const verseNumber = getVerseNumber(word.verseId) ?? 0;
-  //     console.log(verseNumber);
-  //     if (verseNumber !== verse) {
-  //       verse = verseNumber;
-  //       if (inputTextWords.length > 0) {
-  //         inputTextWords += "\n\n";
-  //       }
-  //       inputTextWords += `[${word.verseId}]`;
-  //     }
-  //     inputTextWords += word.text + " ";
-  //   });
-  //   setInputText(inputTextWords.trim());
-  // }, [words]);
-
   useEffect(() => {
     if (!verses || verses.length === 0) {
       setSelectedVerseIdStart(null);
@@ -496,11 +478,10 @@ export default function Home() {
   );
 
   // Update sections with translation
-  const updateSectionsWithTranslation = useCallback(() => {
+  const updateSectionsWithTranslation = () => {
     if (sections.length > 0) {
       setSections((prevSections) => {
         const newSections = [...prevSections];
-        console.log("Updating sections with translation:", translation);
         newSections[0] = {
           ...newSections[0],
           translation: translation,
@@ -508,21 +489,17 @@ export default function Home() {
         return newSections;
       });
     }
-  }, [sections, translation]);
+  };
 
-  const debouncedUpdateTranslation = useCallback(
-    debounce(() => {
-      updateSectionsWithTranslation();
-    }, 500),
-    [updateSectionsWithTranslation]
-  );
+  useEffect(() => {
+    updateSectionsWithTranslation();
+  }, [translation]);
 
   // Handle translation changes
   const handleTranslationChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setTranslation(e.target.value);
-    updateSectionsWithTranslation();
   };
 
   useEffect(() => {
@@ -1017,7 +994,6 @@ export default function Home() {
                           const newVerses = [...translationVerses];
                           newVerses[index] = e.target.value;
                           setTranslation(newVerses.join("\n\n"));
-                          updateSectionsWithTranslation();
                         }}
                       />
                     </div>
