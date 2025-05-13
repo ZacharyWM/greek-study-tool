@@ -44,13 +44,13 @@ const TranslationToggle: React.FC<{
   onToggle: (enabled: boolean) => void;
 }> = ({ isEnabled, onToggle }) => {
   return (
-    <div className="flex items-center space-x-2">
+    <div className="">
       <Switch
         id="translation-toggle"
         checked={isEnabled}
         onCheckedChange={onToggle}
       />
-      <Label htmlFor="translation-toggle">Show Translation</Label>
+      <Label htmlFor="translation-toggle"> &nbsp;Show Translation</Label>
     </div>
   );
 };
@@ -88,8 +88,6 @@ export default function Home() {
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
   const [translation, setTranslation] = useState<string>("");
-  const [isSaved, setIsSaved] = useState<boolean>(true);
-  const [showCopiedAlert, setShowCopiedAlert] = useState<boolean>(false);
 
   // Split position state for resizable translation panel
   const [splitPosition, setSplitPosition] = useState<number>(50); // Default 50% split
@@ -418,13 +416,6 @@ export default function Home() {
     };
   }, []);
 
-  // Update the saved status when translation changes
-  useEffect(() => {
-    if (sections.length > 0) {
-      setIsSaved(translation === sections[0].translation);
-    }
-  }, [translation, sections]);
-
   const saveAnalysis = async (
     saveTitle: string,
     saveDescription: string,
@@ -470,7 +461,6 @@ export default function Home() {
         if (!saveAnalysisId && data.id) {
           setAnalysisId(data.id);
         }
-        setIsSaved(true);
       } else {
         console.error("Failed to save analysis:", await response.text());
       }
@@ -510,6 +500,7 @@ export default function Home() {
     if (sections.length > 0) {
       setSections((prevSections) => {
         const newSections = [...prevSections];
+        console.log("Updating sections with translation:", translation);
         newSections[0] = {
           ...newSections[0],
           translation: translation,
@@ -519,7 +510,6 @@ export default function Home() {
     }
   }, [sections, translation]);
 
-  // Debounced translation update
   const debouncedUpdateTranslation = useCallback(
     debounce(() => {
       updateSectionsWithTranslation();
@@ -532,19 +522,6 @@ export default function Home() {
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setTranslation(e.target.value);
-    setIsSaved(false);
-    debouncedUpdateTranslation();
-  };
-
-  // Handle direct translation changes (from EnhancedTranslation)
-  const handleTranslationUpdate = (value: string) => {
-    setTranslation(value);
-    setIsSaved(false);
-    debouncedUpdateTranslation();
-  };
-
-  // Handle manual save of translation
-  const handleSaveTranslation = () => {
     updateSectionsWithTranslation();
   };
 
@@ -612,8 +589,6 @@ export default function Home() {
       setSections([newSection]);
       setInputText("");
       setTranslation("");
-      // TODO - we want to do this later
-      // setAnalysisId(0);
     }
   };
 
@@ -677,26 +652,6 @@ export default function Home() {
         }),
       }))
     );
-  };
-
-  const handleCopyToClipboard = () => {
-    if (translation) {
-      navigator.clipboard.writeText(translation);
-      setShowCopiedAlert(true);
-      setTimeout(() => setShowCopiedAlert(false), 2000);
-    }
-  };
-
-  const handleDownloadTranslation = () => {
-    if (translation) {
-      const blob = new Blob([translation], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `translation-${new Date().toISOString().split("T")[0]}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
   };
 
   const handleEditParsing = () => {
@@ -868,8 +823,15 @@ export default function Home() {
             </Button>
           )}
 
+          {sections.length > 0 && (
+            <TranslationToggle
+              isEnabled={showTranslation}
+              onToggle={setShowTranslation}
+            />
+          )}
+
           {/* Layout Options */}
-          {showTranslation && (
+          {showTranslation && sections.length > 0 && (
             <div className="flex items-center gap-2">
               <span className="text-sm">Layout:</span>
               <div className="flex border rounded overflow-hidden">
@@ -980,42 +942,6 @@ export default function Home() {
               style={{ width: `${100 - splitPosition}%` }}
             >
               <span>Translation</span>
-              <div className="flex items-center gap-1">
-                {!isSaved && (
-                  <span className="text-xs text-yellow-200 italic mr-2">
-                    Unsaved changes
-                  </span>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCopyToClipboard}
-                  title="Copy to clipboard"
-                  className="h-6 w-6 p-0 bg-white"
-                >
-                  <Copy className="h-3 w-3 text-black" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleDownloadTranslation}
-                  title="Download translation"
-                  className="h-6 w-6 p-0 bg-white"
-                >
-                  <Download className="h-3 w-3 text-black" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleSaveTranslation}
-                  title="Save translation"
-                  className="h-6 px-2 bg-white text-black text-xs"
-                  disabled={isSaved}
-                >
-                  <Save className="h-3 w-3 mr-1" />
-                  Save
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -1091,8 +1017,7 @@ export default function Home() {
                           const newVerses = [...translationVerses];
                           newVerses[index] = e.target.value;
                           setTranslation(newVerses.join("\n\n"));
-                          setIsSaved(false);
-                          debouncedUpdateTranslation();
+                          updateSectionsWithTranslation();
                         }}
                       />
                     </div>
@@ -1136,14 +1061,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          {showCopiedAlert && (
-            <Alert className="m-2 py-1 bg-green-50 border-green-200">
-              <AlertDescription className="text-xs">
-                Translation copied to clipboard!
-              </AlertDescription>
-            </Alert>
-          )}
         </div>
       )}
 
