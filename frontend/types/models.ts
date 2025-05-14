@@ -27,7 +27,7 @@ export interface Section {
   name: string;
   words: Word[];
   phrases: any[]; // We'll define this more specifically when we implement phrase functionality
-  translation: string;
+  translation: string[];
 }
 
 export interface PhraseType {

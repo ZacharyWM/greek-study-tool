@@ -87,7 +87,7 @@ export default function Home() {
 
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
-  const [translation, setTranslation] = useState<string>("");
+  const [translation, setTranslation] = useState<string[]>([]);
 
   // Split position state for resizable translation panel
   const [splitPosition, setSplitPosition] = useState<number>(50); // Default 50% split
@@ -97,16 +97,9 @@ export default function Home() {
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
 
-  const translationRef = useRef<HTMLTextAreaElement>(null);
   const splitContainerRef = useRef<HTMLDivElement>(null);
 
-  const {
-    user,
-    isAuthenticated,
-    loginWithRedirect,
-    logout,
-    getAccessTokenSilently,
-  } = useAuth0();
+  const { isAuthenticated, logout, getAccessTokenSilently } = useAuth0();
 
   const extractVerses = (section) => {
     if (!section || !section.words || !section.words.length) return [];
@@ -499,7 +492,7 @@ export default function Home() {
   const handleTranslationChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    setTranslation(e.target.value);
+    console.log("handleTranslationChange not implemented");
   };
 
   useEffect(() => {
@@ -549,7 +542,7 @@ export default function Home() {
           text: word,
         })),
         phrases: [],
-        translation: "",
+        translation: [],
       };
 
       const truncateAndClean = (text) => {
@@ -565,7 +558,7 @@ export default function Home() {
 
       setSections([newSection]);
       setInputText("");
-      setTranslation("");
+      setTranslation([]);
     }
   };
 
@@ -760,9 +753,6 @@ export default function Home() {
 
   // Get verses from the first section
   const sectionVerses = sections.length > 0 ? extractVerses(sections[0]) : [];
-
-  // Split translation into verses based on empty lines
-  const translationVerses = translation.split(/\n\n+/);
 
   // Add state for the text lookup modal
   const [isTextLookupModalOpen, setIsTextLookupModalOpen] = useState(false);
@@ -989,11 +979,11 @@ export default function Home() {
                         style={{
                           fontFamily: "'Times New Roman', serif",
                         }}
-                        value={translationVerses[index] || ""}
+                        value={translation[index] || ""}
                         onChange={(e) => {
-                          const newVerses = [...translationVerses];
-                          newVerses[index] = e.target.value;
-                          setTranslation(newVerses.join("\n\n"));
+                          let t = [...translation];
+                          t[index] = e.target.value;
+                          setTranslation(t);
                         }}
                       />
                     </div>

@@ -29,7 +29,7 @@ function SideBarNav({ sidebar, showSidebar, sidebarRef }: SideBarNavProps) {
                 <li key={index} className={item.cName}>
                   <Link to={item.path}>
                     {item.icon}
-                    <span>{item.title}</span>
+                    <span style={{ marginLeft: "4px" }}>{item.title}</span>
                   </Link>
                 </li>
               );
