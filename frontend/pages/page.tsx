@@ -977,7 +977,7 @@ export default function Home() {
                     {/* Translation Column */}
                     <div
                       id={`translation-verse-${verse.number}`}
-                      className="p-4 bg-white border-l"
+                      className="p-4 border-l"
                       style={{ width: `${100 - splitPosition}%` }}
                     >
                       <div className="text-blue-700 text-sm font-semibold mb-2">
