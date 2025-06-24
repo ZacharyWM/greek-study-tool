@@ -101,7 +101,8 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
-            {word.parsing ? "Edit Parsing" : "Parse Word"}: {word.text}
+            {word.parsing ? "Edit Parsing" : "Parse Word"}:{" "}
+            <span className="greek-text">{word.text}</span>
           </DialogTitle>
         </DialogHeader>
         <ScrollArea className="h-[60vh] pr-4">

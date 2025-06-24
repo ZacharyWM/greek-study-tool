@@ -10,6 +10,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 
+@font-face {
+  font-family: 'SBLBibLit';
+  src: url('./SBLBibLit.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -154,7 +161,7 @@
   
   /* Keep Greek text styling */
   .greek-text {
-    font-family: "SBLBibLit", serif;
+    font-family: 'SBLBibLit', serif;
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
@@ -532,7 +539,7 @@ sup.text-blue-700.font-semibold.mr-1 {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: "Lato", sans-serif;
+  /* font-family: "Lato", sans-serif; TODO, only apply where we want it. Not to all.*/
 }
 
 .home,
@@ -621,6 +628,6 @@ sup.text-blue-700.font-semibold.mr-1 {
   align-items: center;
 }
 
-span {
+/* span {
   margin-left: 16px;
-}
+} */

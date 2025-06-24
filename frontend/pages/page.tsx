@@ -44,13 +44,13 @@ const TranslationToggle: React.FC<{
   onToggle: (enabled: boolean) => void;
 }> = ({ isEnabled, onToggle }) => {
   return (
-    <div className="flex items-center space-x-2">
+    <div className="">
       <Switch
         id="translation-toggle"
         checked={isEnabled}
         onCheckedChange={onToggle}
       />
-      <Label htmlFor="translation-toggle">Show Translation</Label>
+      <Label htmlFor="translation-toggle"> &nbsp;Show Translation</Label>
     </div>
   );
 };
@@ -87,9 +87,7 @@ export default function Home() {
 
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
-  const [translation, setTranslation] = useState<string>("");
-  const [isSaved, setIsSaved] = useState<boolean>(true);
-  const [showCopiedAlert, setShowCopiedAlert] = useState<boolean>(false);
+  const [translation, setTranslation] = useState<string[]>([]);
 
   // Split position state for resizable translation panel
   const [splitPosition, setSplitPosition] = useState<number>(50); // Default 50% split
@@ -99,16 +97,9 @@ export default function Home() {
   const summaryRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
 
-  const translationRef = useRef<HTMLTextAreaElement>(null);
   const splitContainerRef = useRef<HTMLDivElement>(null);
 
-  const {
-    user,
-    isAuthenticated,
-    loginWithRedirect,
-    logout,
-    getAccessTokenSilently,
-  } = useAuth0();
+  const { isAuthenticated, logout, getAccessTokenSilently } = useAuth0();
 
   const extractVerses = (section) => {
     if (!section || !section.words || !section.words.length) return [];
@@ -279,24 +270,6 @@ export default function Home() {
     };
   }, [verses]);
 
-  // useEffect(() => {
-  //   let inputTextWords = "";
-  //   let verse = 0;
-  //   words.forEach((word) => {
-  //     const verseNumber = getVerseNumber(word.verseId) ?? 0;
-  //     console.log(verseNumber);
-  //     if (verseNumber !== verse) {
-  //       verse = verseNumber;
-  //       if (inputTextWords.length > 0) {
-  //         inputTextWords += "\n\n";
-  //       }
-  //       inputTextWords += `[${word.verseId}]`;
-  //     }
-  //     inputTextWords += word.text + " ";
-  //   });
-  //   setInputText(inputTextWords.trim());
-  // }, [words]);
-
   useEffect(() => {
     if (!verses || verses.length === 0) {
       setSelectedVerseIdStart(null);
@@ -418,13 +391,6 @@ export default function Home() {
     };
   }, []);
 
-  // Update the saved status when translation changes
-  useEffect(() => {
-    if (sections.length > 0) {
-      setIsSaved(translation === sections[0].translation);
-    }
-  }, [translation, sections]);
-
   const saveAnalysis = async (
     saveTitle: string,
     saveDescription: string,
@@ -470,7 +436,6 @@ export default function Home() {
         if (!saveAnalysisId && data.id) {
           setAnalysisId(data.id);
         }
-        setIsSaved(true);
       } else {
         console.error("Failed to save analysis:", await response.text());
       }
@@ -506,7 +471,7 @@ export default function Home() {
   );
 
   // Update sections with translation
-  const updateSectionsWithTranslation = useCallback(() => {
+  const updateSectionsWithTranslation = () => {
     if (sections.length > 0) {
       setSections((prevSections) => {
         const newSections = [...prevSections];
@@ -517,35 +482,17 @@ export default function Home() {
         return newSections;
       });
     }
-  }, [sections, translation]);
+  };
 
-  // Debounced translation update
-  const debouncedUpdateTranslation = useCallback(
-    debounce(() => {
-      updateSectionsWithTranslation();
-    }, 500),
-    [updateSectionsWithTranslation]
-  );
+  useEffect(() => {
+    updateSectionsWithTranslation();
+  }, [translation]);
 
   // Handle translation changes
   const handleTranslationChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    setTranslation(e.target.value);
-    setIsSaved(false);
-    debouncedUpdateTranslation();
-  };
-
-  // Handle direct translation changes (from EnhancedTranslation)
-  const handleTranslationUpdate = (value: string) => {
-    setTranslation(value);
-    setIsSaved(false);
-    debouncedUpdateTranslation();
-  };
-
-  // Handle manual save of translation
-  const handleSaveTranslation = () => {
-    updateSectionsWithTranslation();
+    console.log("handleTranslationChange not implemented");
   };
 
   useEffect(() => {
@@ -595,7 +542,7 @@ export default function Home() {
           text: word,
         })),
         phrases: [],
-        translation: "",
+        translation: [],
       };
 
       const truncateAndClean = (text) => {
@@ -611,9 +558,7 @@ export default function Home() {
 
       setSections([newSection]);
       setInputText("");
-      setTranslation("");
-      // TODO - we want to do this later
-      // setAnalysisId(0);
+      setTranslation([]);
     }
   };
 
@@ -677,26 +622,6 @@ export default function Home() {
         }),
       }))
     );
-  };
-
-  const handleCopyToClipboard = () => {
-    if (translation) {
-      navigator.clipboard.writeText(translation);
-      setShowCopiedAlert(true);
-      setTimeout(() => setShowCopiedAlert(false), 2000);
-    }
-  };
-
-  const handleDownloadTranslation = () => {
-    if (translation) {
-      const blob = new Blob([translation], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `translation-${new Date().toISOString().split("T")[0]}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
   };
 
   const handleEditParsing = () => {
@@ -829,9 +754,6 @@ export default function Home() {
   // Get verses from the first section
   const sectionVerses = sections.length > 0 ? extractVerses(sections[0]) : [];
 
-  // Split translation into verses based on empty lines
-  const translationVerses = translation.split(/\n\n+/);
-
   // Add state for the text lookup modal
   const [isTextLookupModalOpen, setIsTextLookupModalOpen] = useState(false);
 
@@ -868,8 +790,15 @@ export default function Home() {
             </Button>
           )}
 
+          {sections.length > 0 && (
+            <TranslationToggle
+              isEnabled={showTranslation}
+              onToggle={setShowTranslation}
+            />
+          )}
+
           {/* Layout Options */}
-          {showTranslation && (
+          {showTranslation && sections.length > 0 && (
             <div className="flex items-center gap-2">
               <span className="text-sm">Layout:</span>
               <div className="flex border rounded overflow-hidden">
@@ -980,42 +909,6 @@ export default function Home() {
               style={{ width: `${100 - splitPosition}%` }}
             >
               <span>Translation</span>
-              <div className="flex items-center gap-1">
-                {!isSaved && (
-                  <span className="text-xs text-yellow-200 italic mr-2">
-                    Unsaved changes
-                  </span>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCopyToClipboard}
-                  title="Copy to clipboard"
-                  className="h-6 w-6 p-0 bg-white"
-                >
-                  <Copy className="h-3 w-3 text-black" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleDownloadTranslation}
-                  title="Download translation"
-                  className="h-6 w-6 p-0 bg-white"
-                >
-                  <Download className="h-3 w-3 text-black" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleSaveTranslation}
-                  title="Save translation"
-                  className="h-6 px-2 bg-white text-black text-xs"
-                  disabled={isSaved}
-                >
-                  <Save className="h-3 w-3 mr-1" />
-                  Save
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -1074,7 +967,7 @@ export default function Home() {
                     {/* Translation Column */}
                     <div
                       id={`translation-verse-${verse.number}`}
-                      className="p-4 bg-white border-l"
+                      className="p-4 border-l"
                       style={{ width: `${100 - splitPosition}%` }}
                     >
                       <div className="text-blue-700 text-sm font-semibold mb-2">
@@ -1086,13 +979,11 @@ export default function Home() {
                         style={{
                           fontFamily: "'Times New Roman', serif",
                         }}
-                        value={translationVerses[index] || ""}
+                        value={translation[index] || ""}
                         onChange={(e) => {
-                          const newVerses = [...translationVerses];
-                          newVerses[index] = e.target.value;
-                          setTranslation(newVerses.join("\n\n"));
-                          setIsSaved(false);
-                          debouncedUpdateTranslation();
+                          let t = [...translation];
+                          t[index] = e.target.value;
+                          setTranslation(t);
                         }}
                       />
                     </div>
@@ -1136,14 +1027,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          {showCopiedAlert && (
-            <Alert className="m-2 py-1 bg-green-50 border-green-200">
-              <AlertDescription className="text-xs">
-                Translation copied to clipboard!
-              </AlertDescription>
-            </Alert>
-          )}
         </div>
       )}
 
