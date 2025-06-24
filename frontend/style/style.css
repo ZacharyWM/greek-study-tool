@@ -244,19 +244,24 @@
 
 /* Case-based colors for Articles, Nouns, Pronouns */
 .case-nominative {
-  color: #002F5E; /* Darker Oxford blue */
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #428bd3;
+  font-weight: 500;
+  border: 1px solid #90caf9;
 }
 
 .case-genitive {
-  color: #0051A8; /* Lighter Oxford blue */
+  color: #875cd3; /* Light Purple */
 }
 
 .case-dative {
-  color: #9F4C1C; /* Oxford amber */
+  color: #da6927; /* Oxford amber */
 }
 
 .case-accusative {
-  color: #9F1C1C; /* Oxford red */
+  color: #e63c3c; /* Oxford red */
 }
 
 /* Verb moods - Using Oxford color palette */
@@ -271,10 +276,11 @@
 
 .mood-subjunctive {
   color: #65498B; /* Purple */
+  text-shadow: 0 0 2px #ff2727; /* Black outline */
 }
 
 .mood-imperative {
-  color: #9F1C1C; /* Oxford red */
+  color: #ed0808; /* Oxford red */
   text-shadow: 0 0 2px #f2ff00; /* Yellow outline */
 }
 
@@ -285,25 +291,25 @@
 
 /* Case-specific styling for participles when case is specified */
 .mood-participle.case-nominative {
-  text-decoration: wavy underline #002F5E; /* Dark Oxford blue */
+  text-decoration: wavy underline #428bd3; /* Dark Oxford blue */
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
 
 .mood-participle.case-genitive {
-  text-decoration: wavy underline #0051A8; /* Lighter Oxford blue */
+  text-decoration: wavy underline #875cd3; /* Lighter Oxford blue */
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
 
 .mood-participle.case-dative {
-  text-decoration: wavy underline #9F4C1C; /* Oxford amber */
+  text-decoration: wavy underline #da6927; /* Oxford amber */
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
 
 .mood-participle.case-accusative {
-  text-decoration: wavy underline #9F1C1C; /* Oxford red */
+  text-decoration: wavy underline #e63c3c; /* Oxford red */
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
@@ -312,7 +318,7 @@
 .adverb {
   text-decoration: underline;
   text-decoration-style: double;
-  text-decoration-color: #9F1C1C; /* Oxford red */
+  text-decoration-color: #f11919; /* Oxford red */
 }
 
 /* Adjectives */
@@ -323,19 +329,19 @@
 }
 
 .adjective.case-nominative {
-  border-color: #002F5E; /* Dark Oxford blue */
+  border-color: #428bd3; /* Dark Oxford blue */
 }
 
 .adjective.case-genitive {
-  border-color: #0051A8; /* Lighter Oxford blue */
+  border-color: #875cd3; /* Lighter Oxford blue */
 }
 
 .adjective.case-dative {
-  border-color: #9F4C1C; /* Oxford amber */
+  border-color: #da6927; /* Oxford amber */
 }
 
 .adjective.case-accusative {
-  border-color: #9F1C1C; /* Oxford red */
+  border-color: #e63c3c; /* Oxford red */
 }
 
 /* Prepositions */
@@ -346,19 +352,12 @@
 
 /* Conjunctions */
 .conjunction {
-  position: relative;
-}
-
-.conjunction::before {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border: 2px solid #000000; /* Black */
-  border-radius: 50%;
-  pointer-events: none;
+  padding: 2px 6px;
+  border: 1.5px solid #424242;
+  border-radius: 6px;
+  color: #5f5f5f;
+  font-weight: 500;
+  background: rgba(255,255,255,0.8);
 }
 
 /* Word label styles - Enhanced for Oxford theme */
