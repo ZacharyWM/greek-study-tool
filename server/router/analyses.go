@@ -132,7 +132,7 @@ func getAnalysisHandler(c *gin.Context) {
 func getUserAnalysesHandler(c *gin.Context) {
 	claims := auth.ClaimsFromContext(c)
 	if claims == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: missing claims"})
 		return
 	}
 

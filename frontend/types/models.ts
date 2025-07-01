@@ -7,6 +7,7 @@ export interface Word {
   labelWidth?: number;
   lexicalForm?: string;
   glossaryDefinition?: string;
+  strongs?: string;
 }
 
 export interface WordParsing {
@@ -56,6 +57,12 @@ export interface Verse {
   words?: VerseWord[] | null;
 }
 
+export interface GlossaryDefinition {
+  number: number;
+  text: string;
+}
+
+// TODO - update api to return definitions with words
 export interface VerseWord {
   id: number;
   verseId: number;
@@ -63,4 +70,5 @@ export interface VerseWord {
   lemma: string;
   strong: string;
   morph: string;
+  definitions?: GlossaryDefinition[];
 }
