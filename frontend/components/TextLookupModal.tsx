@@ -147,7 +147,11 @@ const TextLookupModal: React.FC<TextLookupModalProps> = ({
               </SelectContent>
             </Select>
 
-            <div className="flex gap-4 items-center">
+            {/* hiding verse selection for now */}
+            <div
+              className="flex gap-4 items-center"
+              style={{ display: "none" }}
+            >
               <Select
                 value={selectedVerseIdStart?.toString()}
                 onValueChange={(value) => onVerseStartSelect(Number(value))}
