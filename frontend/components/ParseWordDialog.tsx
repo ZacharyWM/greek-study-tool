@@ -18,6 +18,7 @@ import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
 import type { Word, WordParsing } from "../types/models";
+import { useAuth0 } from "@auth0/auth0-react";
 
 interface ParseWordDialogProps {
   word: Word;
@@ -50,16 +51,61 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
   onOpenChange,
   onParse,
 }) => {
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [parsing, setParsing] = useState<WordParsing>(initialParsing);
   const [lexicalForm, setLexicalForm] = useState("");
   const [glossaryDefinition, setGlossaryDefinition] = useState("");
+  const [strongsData, setStrongsData] = useState<any>(null);
 
   useEffect(() => {
+    // Log the word prop when component loads or word changes
+    console.log("ParseWordDialog - word prop:", word);
+
     // Set initial values when the dialog opens or the word changes
     setParsing(word.parsing || initialParsing);
     setLexicalForm(word.lexicalForm || "");
     setGlossaryDefinition(word.glossaryDefinition || "");
-  }, [word]);
+
+    const fetchStrongsData = async () => {
+      if (!word.glossaryDefinition && isAuthenticated) {
+        let fetchUrl = "";
+        if (word.strongs) {
+          fetchUrl = `/api/strongs/${word.strongs}`;
+        } else {
+          fetchUrl = `/api/word/${encodeURIComponent(word.text)}/strongs`;
+        }
+        try {
+          const token = await getAccessTokenSilently();
+          const res = await fetch(fetchUrl, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            console.log("Strongs data fetched:", data);
+            setStrongsData(data);
+            if (
+              data &&
+              Array.isArray(data.definitions) &&
+              data.definitions.length > 0
+            ) {
+              setGlossaryDefinition(data.definitions[0].definition || "");
+            }
+          } else {
+            setStrongsData(null);
+            console.error("Failed to fetch Strongs data:", await res.text());
+          }
+        } catch (err) {
+          setStrongsData(null);
+          console.error("Failed to fetch Strongs data:", err);
+        }
+      } else {
+        setStrongsData(null);
+      }
+    };
+    fetchStrongsData();
+  }, [word, isAuthenticated, getAccessTokenSilently]);
 
   const handleParseChange = (key: keyof WordParsing, value: string) => {
     setParsing((prev) => ({ ...prev, [key]: value }));

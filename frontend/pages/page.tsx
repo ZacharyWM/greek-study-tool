@@ -83,7 +83,7 @@ export default function Home() {
   const [selectedVerseIdEnd, setSelectedVerseIdEnd] = useState<number | null>(
     null
   );
-  const [words, setWords] = useState<Map<string, VerseWord>>(new Map());
+  const [wordsMap, setWordsMap] = useState<Map<string, VerseWord>>(new Map());
 
   // Translation state
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
@@ -240,7 +240,7 @@ export default function Home() {
       }
       text += "\n";
     });
-    setWords(wordsMap);
+    setWordsMap(wordsMap);
     setInputText(text.trim());
     setTitle(
       `${getBookById(selectedBookId || 0)} ${getChapterById(
@@ -534,13 +534,25 @@ export default function Home() {
 
   const handleTextSubmit = () => {
     if (inputText.trim()) {
+      const findWord = (text: string): VerseWord | null => {
+        if (wordsMap.has(text)) {
+          return wordsMap.get(text) ?? null;
+        }
+        return null;
+      };
+
+      const words = inputText.split(/\s+/).map((word, index) => ({
+        id: index + 1,
+        text: word,
+        lexicalForm: findWord(word)?.lemma || "",
+        glossaryDefinition: "",
+        strongs: findWord(word)?.strong || "",
+      }));
+
       const newSection: Section = {
         id: Date.now(),
         name: "Imported Text",
-        words: inputText.split(/\s+/).map((word, index) => ({
-          id: index + 1,
-          text: word,
-        })),
+        words: words,
         phrases: [],
         translation: [],
       };

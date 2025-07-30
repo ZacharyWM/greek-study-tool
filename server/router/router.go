@@ -50,6 +50,9 @@ func New(appDir string) *gin.Engine {
 	secureRouter.GET("/chapters/:chapterId/verses", getVersesHandler)
 	secureRouter.GET("/verses", getVersesHandlerWithWords)
 
+	secureRouter.GET("/strongs/:code", getStrongsWordHandler)
+	secureRouter.GET("/word/:text/strongs", getStrongsWordByTextHandler)
+
 	r.NoRoute(func(c *gin.Context) {
 		c.File(path.Join(appDir, "frontend/index.html"))
 	})

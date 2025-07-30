@@ -70,3 +70,35 @@ func getVersesHandlerWithWords(c *gin.Context) {
 
 	c.JSON(http.StatusOK, verses)
 }
+
+func getStrongsWordHandler(c *gin.Context) {
+	code := c.Param("code")
+	if code == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "code is required"})
+		return
+	}
+
+	strongsWord, err := service.GetStrongsWord(code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve strongs word"})
+		return
+	}
+
+	c.JSON(http.StatusOK, strongsWord)
+}
+
+func getStrongsWordByTextHandler(c *gin.Context) {
+	text := c.Param("text")
+	if text == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "text is required"})
+		return
+	}
+
+	strongsWord, err := service.GetStrongsWordByText(text)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve strongs word by text"})
+		return
+	}
+
+	c.JSON(http.StatusOK, strongsWord)
+}
