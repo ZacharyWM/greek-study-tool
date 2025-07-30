@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 )
 
-//go:embed strongs/strongs.json
+// SKIP EMBED go:embed strongs/strongs.json
 var strongsData []byte
 
 type StrongsWord struct {
