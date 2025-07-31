@@ -57,6 +57,14 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
   const [glossaryDefinition, setGlossaryDefinition] = useState("");
   const [strongsData, setStrongsData] = useState<any>(null);
 
+  function trimSpecialChars(str: string): string {
+    // Regex matches unwanted chars at start (^) or end ($) of string
+    return str.replace(
+      /^[\s.,()[\]{}'"!?;:<>\\/-]+|[\s.,()[\]{}'"!?;:<>\\/-]+$/g,
+      ""
+    );
+  }
+
   useEffect(() => {
     // Log the word prop when component loads or word changes
     console.log("ParseWordDialog - word prop:", word);
@@ -67,12 +75,12 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
     setGlossaryDefinition(word.glossaryDefinition || "");
 
     const fetchStrongsData = async () => {
-      if (!word.glossaryDefinition && isAuthenticated) {
+      if ((!word.glossaryDefinition || !word.lexicalForm) && isAuthenticated) {
         let fetchUrl = "";
         if (word.strongs) {
-          fetchUrl = `/api/strongs/${word.strongs}`;
+          fetchUrl = `/api/strongs/${trimSpecialChars(word.strongs)}`;
         } else {
-          fetchUrl = `/api/word/${encodeURIComponent(word.text)}/strongs`;
+          fetchUrl = `/api/word/${trimSpecialChars(word.text)}/strongs`;
         }
         try {
           const token = await getAccessTokenSilently();
@@ -90,7 +98,12 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
               Array.isArray(data.definitions) &&
               data.definitions.length > 0
             ) {
-              setGlossaryDefinition(data.definitions[0].definition || "");
+              if (!word.glossaryDefinition) {
+                setGlossaryDefinition(data.definitions[0].definition || "");
+              }
+              if (!word.lexicalForm) {
+                setLexicalForm(data.lemma || "");
+              }
             }
           } else {
             setStrongsData(null);

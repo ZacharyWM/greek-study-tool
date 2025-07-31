@@ -9,6 +9,7 @@ import (
 
 type StrongsWord struct {
 	Strong      string              `json:"strong"`
+	Lemma       string              `json:"lemma"`
 	Definitions []StrongsDefinition `json:"definitions"`
 }
 
@@ -21,9 +22,9 @@ func GetStrongsWord(code string) (StrongsWord, error) {
 	var strongsWord StrongsWord
 	var definitionsJSON []byte
 
-	row := database.DB.QueryRow("SELECT code, definitions FROM strongs WHERE code = $1", code)
+	row := database.DB.QueryRow("SELECT code, lemma, definitions FROM strongs WHERE code = $1", code)
 
-	err := row.Scan(&strongsWord.Strong, &definitionsJSON)
+	err := row.Scan(&strongsWord.Strong, &strongsWord.Lemma, &definitionsJSON)
 	if err != nil {
 		return StrongsWord{}, fmt.Errorf("error querying strongs data for code %s: %w", code, err)
 	}
@@ -38,24 +39,26 @@ func GetStrongsWord(code string) (StrongsWord, error) {
 
 func GetStrongsWordByText(text string) (StrongsWord, error) {
 	var strongCode string
+	var lemma string
 	var definitionsJSON []byte
 
 	// Join words and strongs tables to get the strongs code and definitions by word text
 	row := database.DB.QueryRow(`
-		SELECT s.code, s.definitions
+		SELECT s.code, s.lemma, s.definitions
 		FROM words w
 		JOIN strongs s ON w.strong = s.code
 		WHERE w.text = $1
 		LIMIT 1
 	`, text)
 
-	err := row.Scan(&strongCode, &definitionsJSON)
+	err := row.Scan(&strongCode, &lemma, &definitionsJSON)
 	if err != nil {
 		return StrongsWord{}, fmt.Errorf("error querying strongs data for word text '%s': %w", text, err)
 	}
 
 	var strongsWord StrongsWord
 	strongsWord.Strong = strongCode
+	strongsWord.Lemma = lemma
 	err = json.Unmarshal(definitionsJSON, &strongsWord.Definitions)
 	if err != nil {
 		return StrongsWord{}, fmt.Errorf("error unmarshalling definitions JSON for word text '%s': %w", text, err)
