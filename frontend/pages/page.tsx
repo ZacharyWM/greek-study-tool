@@ -589,7 +589,11 @@ export default function Home() {
       });
     }
 
-    if (word.parsing || word.lexicalForm || word.glossaryDefinition) {
+    if (
+      word.parsing &&
+      word.parsing.partOfSpeech &&
+      word.parsing?.partOfSpeech !== "none"
+    ) {
       setSummaryOpen(true);
     } else {
       setDialogOpen(true);
@@ -1052,7 +1056,9 @@ export default function Home() {
           }}
           ref={summaryRef}
         >
-          {summaryOpen ? (
+          {summaryOpen &&
+          selectedWord.parsing?.partOfSpeech &&
+          selectedWord.parsing?.partOfSpeech !== "none" ? (
             <div>
               <ParsedWordSummary word={selectedWord} />
               <Button onClick={handleEditParsing} className="mt-2 w-full">
