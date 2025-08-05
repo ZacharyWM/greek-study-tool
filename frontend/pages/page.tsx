@@ -545,7 +545,7 @@ export default function Home() {
         id: index + 1,
         text: word,
         lexicalForm: findWord(word)?.lemma || "",
-        glossaryDefinition: "",
+        glossaryDefinition: findWord(word)?.definition || "",
         strongs: findWord(word)?.strong || "",
       }));
 
