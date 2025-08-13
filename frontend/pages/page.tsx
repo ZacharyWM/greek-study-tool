@@ -610,8 +610,7 @@ export default function Home() {
       prevSections.map((section) => ({
         ...section,
         words: section.words.map((w) =>
-          w.text === word.text ||
-          ((w.strongs?.length ?? 0) > 0 && w.strongs == word.strongs)
+          w.text === word.text
             ? { ...w, parsing, lexicalForm, glossaryDefinition }
             : w
         ),
