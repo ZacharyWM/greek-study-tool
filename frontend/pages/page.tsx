@@ -545,7 +545,7 @@ export default function Home() {
         id: index + 1,
         text: word,
         lexicalForm: findWord(word)?.lemma || "",
-        glossaryDefinition: "",
+        glossaryDefinition: findWord(word)?.definition || "",
         strongs: findWord(word)?.strong || "",
       }));
 
@@ -589,7 +589,11 @@ export default function Home() {
       });
     }
 
-    if (word.parsing || word.lexicalForm || word.glossaryDefinition) {
+    if (
+      word.parsing &&
+      word.parsing.partOfSpeech &&
+      word.parsing?.partOfSpeech !== "none"
+    ) {
       setSummaryOpen(true);
     } else {
       setDialogOpen(true);
@@ -606,7 +610,8 @@ export default function Home() {
       prevSections.map((section) => ({
         ...section,
         words: section.words.map((w) =>
-          w.id === word.id
+          w.text === word.text ||
+          ((w.strongs?.length ?? 0) > 0 && w.strongs == word.strongs)
             ? { ...w, parsing, lexicalForm, glossaryDefinition }
             : w
         ),
@@ -1052,7 +1057,9 @@ export default function Home() {
           }}
           ref={summaryRef}
         >
-          {summaryOpen ? (
+          {summaryOpen &&
+          selectedWord.parsing?.partOfSpeech &&
+          selectedWord.parsing?.partOfSpeech !== "none" ? (
             <div>
               <ParsedWordSummary word={selectedWord} />
               <Button onClick={handleEditParsing} className="mt-2 w-full">

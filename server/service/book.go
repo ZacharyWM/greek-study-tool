@@ -29,12 +29,13 @@ type Verse struct {
 }
 
 type Word struct {
-	ID      int    `json:"id"`
-	VerseID int    `json:"verseId"`
-	Text    string `json:"text"`
-	Lemma   string `json:"lemma"`
-	Strong  string `json:"strong"`
-	Morph   string `json:"morph"`
+	ID         int    `json:"id"`
+	VerseID    int    `json:"verseId"`
+	Text       string `json:"text"`
+	Lemma      string `json:"lemma"`
+	Strong     string `json:"strong"`
+	Morph      string `json:"morph"`
+	Definition string `json:"definition"`
 }
 
 func GetBooks() ([]Book, error) {
@@ -121,10 +122,12 @@ func GetVersesWithWords(startID, endID int) ([]Verse, error) {
                             'text', w.text,
                             'lemma', w.lemma,
                             'strong', w.strong,
-                            'morph', w.morph
+                            'morph', w.morph,
+                            'definition', COALESCE(s.definitions->0->>'definition', '')
                         )
                     )
                     FROM words w
+                    JOIN strongs s on w.strong = s.code
                     WHERE w.verse_id = v.id
                 )
             )

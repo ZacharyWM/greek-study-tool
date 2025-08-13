@@ -121,7 +121,62 @@ const ParseWordDialog: React.FC<ParseWordDialogProps> = ({
   }, [word, isAuthenticated, getAccessTokenSilently]);
 
   const handleParseChange = (key: keyof WordParsing, value: string) => {
-    setParsing((prev) => ({ ...prev, [key]: value }));
+    setParsing((prev) => {
+      const next: WordParsing = { ...prev, [key]: value };
+
+      const visible = new Set<keyof WordParsing>();
+      visible.add("partOfSpeech");
+
+      const pos = next.partOfSpeech;
+
+      if (
+        pos === "article" ||
+        pos === "noun" ||
+        pos === "adjective" ||
+        pos === "pronoun"
+      ) {
+        visible.add("case");
+        visible.add("gender");
+        visible.add("number");
+      }
+
+      if (pos === "pronoun") {
+        visible.add("person");
+        visible.add("type");
+      }
+
+      if (pos === "adjective" || pos === "adverb") {
+        visible.add("degree");
+      }
+
+      if (pos === "verb") {
+        visible.add("mood");
+        visible.add("tense");
+        visible.add("voice");
+        const mood = next.mood ?? "";
+        if (
+          ["indicative", "subjunctive", "imperative", "optative"].includes(mood)
+        ) {
+          visible.add("person");
+          visible.add("number");
+        }
+        if (mood === "participle") {
+          visible.add("number");
+          visible.add("gender");
+          visible.add("case");
+        }
+        // infinitive: none of person/number/gender/case
+      }
+
+      // Clear any field not currently visible (except partOfSpeech which is always visible)
+      (Object.keys(next) as (keyof WordParsing)[]).forEach((k) => {
+        if (!visible.has(k) && k !== "partOfSpeech") {
+          next[k] = "";
+        }
+      });
+
+      return next;
+    });
   };
 
   const handleSubmit = () => {

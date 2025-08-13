@@ -70,5 +70,5 @@ export interface VerseWord {
   lemma: string;
   strong: string;
   morph: string;
-  definitions?: GlossaryDefinition[];
+  definition: string;
 }
