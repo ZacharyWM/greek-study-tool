@@ -109,48 +109,96 @@ func GetVerses(chapterID int) ([]Verse, error) {
 
 func GetVersesWithWords(startID, endID int) ([]Verse, error) {
 	query := `
-        SELECT json_agg(
-            json_build_object(
-                'id', v.id,
-                'chapterId', v.chapter_id,
-                'number', v.number,
-                'words', (
-                    SELECT json_agg(
-                        json_build_object(
-                            'id', w.id,
-                            'verseId', w.verse_id,
-                            'text', w.text,
-                            'lemma', w.lemma,
-                            'strong', w.strong,
-                            'morph', w.morph,
-                            'definition', COALESCE(s.definitions->0->>'definition', '')
-                        )
-                    )
-                    FROM words w
-                    JOIN strongs s on w.strong = s.code
-                    WHERE w.verse_id = v.id
-                )
-            )
-        ) AS verses
+        SELECT
+            v.id AS verse_id,
+            v.chapter_id,
+            v.number AS verse_number,
+            w.id AS word_id,
+            w.text,
+            w.lemma,
+            w.strong,
+            w.morph,
+            COALESCE(s.definitions->0->>'definition', '') AS definition
         FROM verses v
-        WHERE v.id BETWEEN $1 AND $2`
+        LEFT JOIN words w ON w.verse_id = v.id
+        LEFT JOIN strongs s ON w.strong = s.code
+        WHERE v.id BETWEEN $1 AND $2
+        ORDER BY v.id, w.id`
 
-	// Execute the query
-	row := database.DB.QueryRow(query, startID, endID)
-
-	// The result will be a JSON array, so we need to store it as a raw JSON string first
-	var jsonResult []byte
-	if err := row.Scan(&jsonResult); err != nil {
+	rows, err := database.DB.Query(query, startID, endID)
+	if err != nil {
 		return nil, fmt.Errorf("error querying verses with words: %w", err)
 	}
+	defer rows.Close()
 
-	// Unmarshal the JSON result into the []Verse struct
-	var verses []Verse
-	if err := json.Unmarshal(jsonResult, &verses); err != nil {
-		return nil, fmt.Errorf("error unmarshalling verses JSON: %w", err)
+	versesMap := make(map[int]*Verse)
+	var versesOrder []int
+
+	for rows.Next() {
+		var (
+			verseID     int
+			chapterID   int
+			verseNumber int
+			wordID      *int
+			text        *string
+			lemma       *string
+			strong      *string
+			morph       *string
+			definition  *string
+		)
+
+		if err := rows.Scan(&verseID, &chapterID, &verseNumber, &wordID, &text, &lemma, &strong, &morph, &definition); err != nil {
+			return nil, fmt.Errorf("error scanning verse with words: %w", err)
+		}
+
+		v, ok := versesMap[verseID]
+		if !ok {
+			v = &Verse{
+				ID:        verseID,
+				ChapterID: chapterID,
+				Number:    verseNumber,
+			}
+			versesMap[verseID] = v
+			versesOrder = append(versesOrder, verseID)
+		}
+
+		// If there is no word for this row (LEFT JOIN), skip adding a word
+		if wordID == nil {
+			continue
+		}
+
+		w := Word{
+			ID:         *wordID,
+			VerseID:    verseID,
+			Text:       derefString(text),
+			Lemma:      derefString(lemma),
+			Strong:     derefString(strong),
+			Morph:      derefString(morph),
+			Definition: derefString(definition),
+		}
+		v.Words = append(v.Words, w)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over verses with words: %w", err)
+	}
+
+	// Build the final ordered slice of verses
+	verses := make([]Verse, 0, len(versesOrder))
+	for _, id := range versesOrder {
+		if v, ok := versesMap[id]; ok {
+			verses = append(verses, *v)
+		}
 	}
 
 	return verses, nil
+}
+
+func derefString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 // ImportBookDataFromJSON imports book data from JSON and inserts it into the database
