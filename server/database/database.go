@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"net"
+	"net/url"
 	"os"
+	"strings"
 
 	_ "embed"
 
@@ -32,7 +35,7 @@ func InitDB() {
 	// connectionString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbName)
 
 	if os.Getenv("DATABASE_URL") != "" {
-		connectionString = os.Getenv("DATABASE_URL")
+		connectionString = normalizeConnectionString(os.Getenv("DATABASE_URL"))
 		slog.Info("Using DATABASE_URL from environment variables")
 	} else {
 		slog.Info("Using default connection string")
@@ -52,25 +55,98 @@ func InitDB() {
 	slog.Info("Database connection established")
 }
 
-// TODO - work out a better migration strategy
-func RunMigrations() {
+func normalizeConnectionString(connectionString string) string {
+	sslMode := sslModeForConnectionString(connectionString)
 
-	slog.Info("Running migrations")
+	if strings.Contains(connectionString, "://") {
+		parsedURL, err := url.Parse(connectionString)
+		if err != nil {
+			slog.Warn("Failed to parse DATABASE_URL, falling back to raw string", "error", err)
+			return upsertSSLMode(connectionString, sslMode)
+		}
 
-	createTestTableCmd := `
-								CREATE TABLE IF NOT EXISTS test_table (
-									id SERIAL PRIMARY KEY,
-									name VARCHAR(255)
-								);
-								`
-	_, err := DB.Exec(createTestTableCmd)
-	if err != nil {
-		log.Fatalf("Error creating test table: %v", err)
+		// Force the app's SSL choice instead of inheriting an incompatible sslmode from the URL.
+		query := parsedURL.Query()
+		query.Del("sslmode")
+		query.Set("sslmode", sslMode)
+		parsedURL.RawQuery = query.Encode()
+
+		return parsedURL.String()
 	}
 
-	slog.Info("Test table created")
+	return upsertSSLMode(connectionString, sslMode)
+}
 
-	return
+func sslModeForConnectionString(connectionString string) string {
+	if isProductionEnv() {
+		return "require"
+	}
+
+	host := hostFromConnectionString(connectionString)
+	if host == "" {
+		return "require"
+	}
+
+	switch host {
+	case "localhost":
+		return "disable"
+	}
+
+	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
+		return "disable"
+	}
+
+	return "require"
+}
+
+func hostFromConnectionString(connectionString string) string {
+	if strings.Contains(connectionString, "://") {
+		parsedURL, err := url.Parse(connectionString)
+		if err != nil {
+			return ""
+		}
+
+		return parsedURL.Hostname()
+	}
+
+	for _, part := range strings.Fields(connectionString) {
+		key, value, found := strings.Cut(part, "=")
+		if found && key == "host" {
+			return value
+		}
+	}
+
+	return ""
+}
+
+func upsertSSLMode(connectionString string, sslMode string) string {
+	filteredParts := make([]string, 0, len(strings.Fields(connectionString))+1)
+	for _, part := range strings.Fields(connectionString) {
+		key, _, found := strings.Cut(part, "=")
+		if found && key == "sslmode" {
+			continue
+		}
+
+		filteredParts = append(filteredParts, part)
+	}
+
+	filteredParts = append(filteredParts, "sslmode="+sslMode)
+
+	return strings.Join(filteredParts, " ")
+}
+
+func isProductionEnv() bool {
+	for _, envVar := range []string{"APP_ENV", "GO_ENV", "ENVIRONMENT", "NODE_ENV"} {
+		if strings.EqualFold(os.Getenv(envVar), "production") {
+			return true
+		}
+	}
+
+	return false
+}
+
+// TODO - work out a better migration strategy
+func RunMigrations() {
 
 	createUsersTableCmd := `
 								CREATE TABLE IF NOT EXISTS users (
@@ -87,7 +163,7 @@ func RunMigrations() {
 
 								CREATE UNIQUE INDEX IF NOT EXISTS idx_users_idp_id ON users(idp_id);
 								`
-	_, err = DB.Exec(createUsersTableCmd)
+	_, err := DB.Exec(createUsersTableCmd)
 	if err != nil {
 		log.Fatalf("Error creating users table: %v", err)
 	}
