@@ -33,6 +33,9 @@ func InitDB() {
 
 	if os.Getenv("DATABASE_URL") != "" {
 		connectionString = os.Getenv("DATABASE_URL")
+		slog.Info("Using DATABASE_URL from environment variables")
+	} else {
+		slog.Info("Using default connection string")
 	}
 
 	var err error
@@ -52,6 +55,23 @@ func InitDB() {
 // TODO - work out a better migration strategy
 func RunMigrations() {
 
+	slog.Info("Running migrations")
+
+	createTestTableCmd := `
+								CREATE TABLE IF NOT EXISTS test_table (
+									id SERIAL PRIMARY KEY,
+									name VARCHAR(255)
+								);
+								`
+	_, err := DB.Exec(createTestTableCmd)
+	if err != nil {
+		log.Fatalf("Error creating test table: %v", err)
+	}
+
+	slog.Info("Test table created")
+
+	return
+
 	createUsersTableCmd := `
 								CREATE TABLE IF NOT EXISTS users (
 									id SERIAL PRIMARY KEY,
@@ -67,7 +87,7 @@ func RunMigrations() {
 
 								CREATE UNIQUE INDEX IF NOT EXISTS idx_users_idp_id ON users(idp_id);
 								`
-	_, err := DB.Exec(createUsersTableCmd)
+	_, err = DB.Exec(createUsersTableCmd)
 	if err != nil {
 		log.Fatalf("Error creating users table: %v", err)
 	}
