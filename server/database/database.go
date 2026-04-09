@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"os"
 
 	_ "embed"
 
@@ -29,6 +30,10 @@ func InitDB() {
 
 	// vm use
 	// connectionString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbName)
+
+	if os.Getenv("DATABASE_URL") != "" {
+		connectionString = os.Getenv("DATABASE_URL")
+	}
 
 	var err error
 	DB, err = sql.Open("postgres", connectionString)
