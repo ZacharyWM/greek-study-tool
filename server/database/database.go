@@ -5,10 +5,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"net"
-	"net/url"
 	"os"
-	"strings"
 
 	_ "embed"
 
@@ -35,10 +32,7 @@ func InitDB() {
 	// connectionString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbName)
 
 	if os.Getenv("DATABASE_URL") != "" {
-		connectionString = normalizeConnectionString(os.Getenv("DATABASE_URL"))
-		slog.Info("Using DATABASE_URL from environment variables")
-	} else {
-		slog.Info("Using default connection string")
+		connectionString = os.Getenv("DATABASE_URL")
 	}
 
 	var err error
@@ -55,100 +49,10 @@ func InitDB() {
 	slog.Info("Database connection established")
 }
 
-func normalizeConnectionString(connectionString string) string {
-	sslMode := sslModeForConnectionString(connectionString)
-
-	if strings.Contains(connectionString, "://") {
-		parsedURL, err := url.Parse(connectionString)
-		if err != nil {
-			slog.Warn("Failed to parse DATABASE_URL, falling back to raw string", "error", err)
-			return upsertSSLMode(connectionString, sslMode)
-		}
-
-		// Force the app's SSL choice instead of inheriting an incompatible sslmode from the URL.
-		query := parsedURL.Query()
-		query.Del("sslmode")
-		query.Set("sslmode", sslMode)
-		parsedURL.RawQuery = query.Encode()
-
-		return parsedURL.String()
-	}
-
-	return upsertSSLMode(connectionString, sslMode)
-}
-
-func sslModeForConnectionString(connectionString string) string {
-	if isProductionEnv() {
-		return "require"
-	}
-
-	host := hostFromConnectionString(connectionString)
-	if host == "" {
-		return "require"
-	}
-
-	switch host {
-	case "localhost":
-		return "disable"
-	}
-
-	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
-		return "disable"
-	}
-
-	return "require"
-}
-
-func hostFromConnectionString(connectionString string) string {
-	if strings.Contains(connectionString, "://") {
-		parsedURL, err := url.Parse(connectionString)
-		if err != nil {
-			return ""
-		}
-
-		return parsedURL.Hostname()
-	}
-
-	for _, part := range strings.Fields(connectionString) {
-		key, value, found := strings.Cut(part, "=")
-		if found && key == "host" {
-			return value
-		}
-	}
-
-	return ""
-}
-
-func upsertSSLMode(connectionString string, sslMode string) string {
-	filteredParts := make([]string, 0, len(strings.Fields(connectionString))+1)
-	for _, part := range strings.Fields(connectionString) {
-		key, _, found := strings.Cut(part, "=")
-		if found && key == "sslmode" {
-			continue
-		}
-
-		filteredParts = append(filteredParts, part)
-	}
-
-	filteredParts = append(filteredParts, "sslmode="+sslMode)
-
-	return strings.Join(filteredParts, " ")
-}
-
-func isProductionEnv() bool {
-	for _, envVar := range []string{"APP_ENV", "GO_ENV", "ENVIRONMENT", "NODE_ENV"} {
-		if strings.EqualFold(os.Getenv(envVar), "production") {
-			return true
-		}
-	}
-
-	return false
-}
-
 // TODO - work out a better migration strategy
 func RunMigrations() {
-
-	createUsersTableCmd := `
+	/*
+								createUsersTableCmd := `
 								CREATE TABLE IF NOT EXISTS users (
 									id SERIAL PRIMARY KEY,
 									idp_id VARCHAR(255) NOT NULL,
@@ -163,12 +67,12 @@ func RunMigrations() {
 
 								CREATE UNIQUE INDEX IF NOT EXISTS idx_users_idp_id ON users(idp_id);
 								`
-	_, err := DB.Exec(createUsersTableCmd)
-	if err != nil {
-		log.Fatalf("Error creating users table: %v", err)
-	}
+								_, err := DB.Exec(createUsersTableCmd)
+								if err != nil {
+									log.Fatalf("Error creating users table: %v", err)
+								}
 
-	createAnalyesesTableCmd := `
+								createAnalyesesTableCmd := `
 									CREATE TABLE IF NOT EXISTS analyses (
 									id SERIAL PRIMARY KEY,
 									user_id INTEGER NOT NULL REFERENCES users(id),
@@ -177,37 +81,38 @@ func RunMigrations() {
 
 								CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id);
 								`
-	_, err = DB.Exec(createAnalyesesTableCmd)
-	if err != nil {
-		log.Fatalf("Error creating analyses table: %v", err)
-	}
+								_, err = DB.Exec(createAnalyesesTableCmd)
+								if err != nil {
+									log.Fatalf("Error creating analyses table: %v", err)
+								}
 
-	addFieldsToAnalyesesTableCmd := `
+								addFieldsToAnalyesesTableCmd := `
 									ALTER TABLE analyses
 									ADD COLUMN title VARCHAR(100),
 									ADD COLUMN description TEXT,
 									ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 									ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
 								`
-	_, err = DB.Exec(addFieldsToAnalyesesTableCmd)
-	if err != nil {
-		slog.Debug("This is expected if the 'analyses table already exists")
-	}
+								_, err = DB.Exec(addFieldsToAnalyesesTableCmd)
+								if err != nil {
+									slog.Debug("This is expected if the 'analyses table already exists")
+								}
 
-	// Create Books table
-	createBooksTableCmd := `
+
+							// Create Books table
+							createBooksTableCmd := `
 							CREATE TABLE IF NOT EXISTS books (
 								id SERIAL PRIMARY KEY,
 								title VARCHAR(255) NOT NULL
 							);
 							`
-	_, err = DB.Exec(createBooksTableCmd)
-	if err != nil {
-		slog.Debug("This is expected if the 'books' table already exists")
-	}
+							_, err := DB.Exec(createBooksTableCmd)
+							if err != nil {
+								slog.Debug("This is expected if the 'books' table already exists")
+							}
 
-	// Create Chapters table
-	createChaptersTableCmd := `
+							// Create Chapters table
+							createChaptersTableCmd := `
 							CREATE TABLE IF NOT EXISTS chapters (
 								id SERIAL PRIMARY KEY,
 								book_id INTEGER NOT NULL REFERENCES books(id),
@@ -216,13 +121,13 @@ func RunMigrations() {
 
 							CREATE INDEX IF NOT EXISTS idx_chapters_book_id ON chapters(book_id);
 							`
-	_, err = DB.Exec(createChaptersTableCmd)
-	if err != nil {
-		slog.Debug("This is expected if the 'chapters' table already exists")
-	}
+							_, err = DB.Exec(createChaptersTableCmd)
+							if err != nil {
+								slog.Debug("This is expected if the 'chapters' table already exists")
+							}
 
-	// Create Verses table
-	createVersesTableCmd := `
+							// Create Verses table
+							createVersesTableCmd := `
 							CREATE TABLE IF NOT EXISTS verses (
 								id SERIAL PRIMARY KEY,
 								chapter_id INTEGER NOT NULL REFERENCES chapters(id),
@@ -232,13 +137,13 @@ func RunMigrations() {
 
 							CREATE INDEX IF NOT EXISTS idx_verses_chapter_id ON verses(chapter_id);
 							`
-	_, err = DB.Exec(createVersesTableCmd)
-	if err != nil {
-		slog.Debug("This is expected if the 'verses' table already exists")
-	}
+							_, err = DB.Exec(createVersesTableCmd)
+							if err != nil {
+								slog.Debug("This is expected if the 'verses' table already exists")
+							}
 
-	// Create Words table
-	createWordsTableCmd := `
+							// Create Words table
+							createWordsTableCmd := `
 							CREATE TABLE IF NOT EXISTS words (
 								id SERIAL PRIMARY KEY,
 								verse_id INTEGER NOT NULL REFERENCES verses(id),
@@ -250,15 +155,17 @@ func RunMigrations() {
 
 							CREATE INDEX IF NOT EXISTS idx_words_verse_id ON words(verse_id);
 							`
-	_, err = DB.Exec(createWordsTableCmd)
-	if err != nil {
-		slog.Debug("This is expected if the 'words' table already exists")
-	}
+							_, err = DB.Exec(createWordsTableCmd)
+							if err != nil {
+								slog.Debug("This is expected if the 'words' table already exists")
+							}
 
-	// addTheBooks()
+					addTheBooks()
 
-	// Create Strongs table
-	createStrongsTableCmd := `
+
+
+				// Create Strongs table
+				createStrongsTableCmd := `
 					CREATE TABLE IF NOT EXISTS strongs (
 						id SERIAL PRIMARY KEY,
 						code VARCHAR(10) NOT NULL,
@@ -267,19 +174,21 @@ func RunMigrations() {
 
 					CREATE UNIQUE INDEX IF NOT EXISTS idx_strongs_code ON strongs(code);
 					`
-	_, err = DB.Exec(createStrongsTableCmd)
-	if err != nil {
-		slog.Debug("This is expected if the 'strongs' table already exists")
-	}
+				_, err := DB.Exec(createStrongsTableCmd)
+				if err != nil {
+					slog.Debug("This is expected if the 'strongs' table already exists")
+				}
 
-	importStrongsData()
 
-	_, err = DB.Exec("ALTER TABLE strongs ADD COLUMN lemma VARCHAR(50);")
-	if err != nil {
-		slog.Debug("This is expected if the 'lemma' column already exists")
-	}
+			importStrongsData()
 
-	setLemmasCmd := `
+
+		_, err := DB.Exec("ALTER TABLE strongs ADD COLUMN lemma VARCHAR(50);")
+		if err != nil {
+			slog.Debug("This is expected if the 'lemma' column already exists")
+		}
+
+		setLemmasCmd := `
 			update strongs s
 			set lemma = (
 				select w.lemma
@@ -288,10 +197,11 @@ func RunMigrations() {
 				limit 1
 			)
 		`
-	_, err = DB.Exec(setLemmasCmd)
-	if err != nil {
-		slog.Error("Error setting lemmas in strongs table", "error", err)
-	}
+		_, err = DB.Exec(setLemmasCmd)
+		if err != nil {
+			slog.Error("Error setting lemmas in strongs table", "error", err)
+		}
+	*/
 
 	slog.Info("Database migrations completed")
 }
